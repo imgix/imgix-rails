@@ -96,7 +96,7 @@ describe Imgix::Rails do
       end
 
       it 'generates a 1x and 2x image using `srcset` by default' do
-        expect(helper.ix_responsive_image_tag("image.jpg")).to eq "<img srcset=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0, http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&amp;dpr=2\" src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0\" alt=\"Image.jpg?ixlib=rails 0.1\" />"
+        expect(helper.ix_responsive_image_tag("image.jpg")).to eq "<img srcset=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0 1x, http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&amp;dpr=2 2x\" src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0\" alt=\"Image.jpg?ixlib=rails 0.1\" />"
       end
     end
 
