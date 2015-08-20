@@ -80,9 +80,26 @@ describe Imgix::Rails do
       it 'passes through non-imgix tags' do
         expect(helper.ix_image_tag("image.jpg", { alt: "No Church in the Wild", w: 400, h: 300 })).to eq "<img alt=\"No Church in the Wild\" src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&amp;h=300&amp;w=400\" />"
       end
+
+      it 'signs an image path if a :secure_url_token is given'
     end
 
-    describe '#ix_responsive_image_tag'
+    describe '#ix_responsive_image_tag' do
+      let(:app) { Class.new(::Rails::Application) }
+      let(:source) { "assets.imgix.net" }
+      let(:truncated_version) { Imgix::Rails::VERSION.split(".").first(2).join(".") }
+
+      before do
+        app.config.imgix = {
+          source: source
+        }
+      end
+
+      it 'generates a 1x and 2x image using `srcset` by default' do
+        expect(helper.ix_responsive_image_tag("image.jpg")).to eq "<img srcset=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0, http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&amp;dpr=2\" src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0\" alt=\"Image.jpg?ixlib=rails 0.1\" />"
+      end
+    end
+
     describe '#ix_picture_tag'
   end
 end

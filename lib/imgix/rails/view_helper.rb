@@ -11,6 +11,14 @@ module Imgix
         image_tag(client.path(source).to_url(options), normal_opts)
       end
 
+      def ix_responsive_image_tag(source, options={})
+        options.merge!({
+          srcset: srcset_for(source, options)
+        })
+
+        ix_image_tag(source, options)
+      end
+
     private
 
       def validate_configuration!
@@ -51,6 +59,18 @@ module Imgix
       def parameters
         path = File.expand_path("../../../../vendor/parameters.json", __FILE__)
         @parameters ||= JSON.parse(File.read(path), symbolize_names: true)[:parameters]
+      end
+
+      def srcset_for(source, options={})
+        configured_resolutions.map do |resolution|
+          srcset_options = options.slice(*available_parameters)
+          srcset_options[:dpr] = resolution unless resolution == 1
+          client.path(source).to_url(srcset_options)
+        end.join(', ')
+      end
+
+      def configured_resolutions
+        config.imgix[:responsive_resolutions] || [1, 2]
       end
     end
   end
