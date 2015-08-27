@@ -8,7 +8,7 @@ module Imgix
 
         normal_opts = options.slice!(*available_parameters)
 
-        image_tag(client.path(source).to_url(options), normal_opts)
+        image_tag(client.path(source).to_url(options).html_safe, normal_opts)
       end
 
       def ix_responsive_image_tag(source, options={})
@@ -17,6 +17,13 @@ module Imgix
         })
 
         ix_image_tag(source, options)
+      end
+
+      def ix_picture_tag(source, options={})
+        content_tag(:picture) do
+          concat(tag(:source, srcset: srcset_for(source, options)))
+          concat(ix_image_tag(source, options))
+        end
       end
 
     private
@@ -43,6 +50,10 @@ module Imgix
 
         if config.imgix[:secure_url_token].present?
           opts[:token] = config.imgix[:secure_url_token]
+        end
+
+        if config.imgix.has_key?(:include_library_param)
+          opts[:include_library_param] = config.imgix[:include_library_param]
         end
 
         @client = Imgix::Client.new(opts)
