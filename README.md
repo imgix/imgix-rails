@@ -85,6 +85,28 @@ This will generate the following HTML:
 />
 ```
 
+### ix_picture_tag
+
+The `ix_picture_tag` helper method makes it easy to generate `<picture>` elements in your Rails app.
+
+The `ix_picture_tag` method will generate a `<picture>` element with a single `<source>` element and a fallback `<img>` element. We are open for new directions to take this in.
+
+It will use the configured device-pixel-ratios in the `config.imgix[:responsive_resolutions]` value. It will default to `[1, 2]`.
+
+```erb
+<%= ix_picture_tag('/users/1/avatar.png', { w: 400, h: 300 }) %>
+```
+
+Will generate the following HTML:
+
+```html
+<picture>
+  <source srcset="https://assets.imgix.net/users/1/avatar.png?w=400&h=300 1x,
+                  https://assets.imgix.net/users/1/avatar.png?w=400&h=300&dpr=2 2x" />
+  <img src="https://assets.imgix.net/users/1/avatar.png?w=400&h=300" />
+</picture>
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
