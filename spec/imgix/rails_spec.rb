@@ -54,6 +54,39 @@ describe Imgix::Rails do
         helper.ix_image_tag("assets.png")
       }.not_to raise_error
     end
+
+    describe 'hostname removal' do
+      let(:hostname) { 's3.amazonaws.com' }
+      let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
+      let(:yet_another_hostname) { 's3-sa-east-1.amazonaws.com' }
+      let(:app) { Class.new(::Rails::Application) }
+      let(:source) { "assets.imgix.net" }
+
+      before do
+        app.config.imgix = {
+          source: source
+        }
+      end
+
+      it 'does not remove a hostname for a fully-qualified URL' do
+        app.config.imgix[:hostname_to_replace] = hostname
+
+        expect(helper.ix_image_tag("https://adifferenthostname.com/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/https%3A%2F%2Fadifferenthostname.com%2Fimage.jpg?ixlib=rails-0.1.0&h=300&w=400\" alt=\"Https%3a%2f%2fadifferenthostname.com%2fimage.jpg?ixlib=rails 0.1\" />"
+      end
+
+      it 'removes a single hostname' do
+        app.config.imgix[:hostname_to_replace] = hostname
+
+        expect(helper.ix_image_tag("https://#{hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&h=300&w=400\" alt=\"Image.jpg?ixlib=rails 0.1\" />"
+      end
+
+      it 'removes multiple configured protocol/hostname combos' do
+        app.config.imgix[:hostnames_to_replace] = [another_hostname, yet_another_hostname]
+
+        expect(helper.ix_image_tag("https://#{another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&h=300&w=400\" alt=\"Image.jpg?ixlib=rails 0.1\" />"
+        expect(helper.ix_image_tag("https://#{yet_another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&h=300&w=400\" alt=\"Image.jpg?ixlib=rails 0.1\" />"
+      end
+    end
   end
 
   describe Imgix::Rails::ViewHelper do
