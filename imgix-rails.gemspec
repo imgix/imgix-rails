@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Kelly Sutton"]
   spec.email         = ["kelly@imgix.com"]
 
-  spec.summary       = %q{}
-  spec.description   = %q{}
+  spec.summary       = %q{Makes integrating imgix into your Rails app easier. It builds on imgix-rb to offer a few Rails-specific interfaces.}
+  spec.description   = %q{Makes integrating imgix into your Rails app easier. It builds on imgix-rb to offer a few Rails-specific interfaces.}
   spec.homepage      = "https://github.com/imgix/imgix-rails"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
