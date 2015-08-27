@@ -6,6 +6,7 @@ module Imgix
       def ix_image_tag(source, options={})
         validate_configuration!
 
+        source = replace_hostname(source)
         normal_opts = options.slice!(*available_parameters)
 
         image_tag(client.path(source).to_url(options).html_safe, normal_opts)
@@ -37,6 +38,19 @@ module Imgix
         unless imgix[:source].is_a?(Array) || imgix[:source].is_a?(String)
           raise ConfigurationError.new("imgix source must be a String or an Array.")
         end
+      end
+
+      def replace_hostname(source)
+        new_source = source.dup
+
+        # Replace any hostnames configured to trim things down just to their paths.
+        # We use split to remove the protocol in the process.
+        hostnames_to_remove.each do |hostname|
+          splits = source.split(hostname)
+          new_source = splits.last if splits.size > 1
+        end
+
+        new_source
       end
 
       def client
@@ -82,6 +96,10 @@ module Imgix
 
       def configured_resolutions
         config.imgix[:responsive_resolutions] || [1, 2]
+      end
+
+      def hostnames_to_remove
+        Array(config.imgix[:hostname_to_replace] || config.imgix[:hostnames_to_replace])
       end
     end
   end

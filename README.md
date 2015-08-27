@@ -109,6 +109,39 @@ Will generate the following HTML:
 </picture>
 ```
 
+### Hostname Removal
+
+You can also configure imgix-rails to disregard given hostnames and only use the path component from given URLs. This is useful if you have [a Web Folder or an Amazon S3 imgix Source configured](https://www.imgix.com/docs/tutorials/creating-sources) but store the fully-qualified URLs for those resources in your database.
+
+For example, let's say you are using S3 for storage. An `#avatar_url` value might look like the following in your application:
+
+```ruby
+@user.avatar_url #=> "https://s3.amazonaws.com/my-bucket/users/1.png"
+```
+
+You would then configure imgix in your Rails application to disregard the `'s3.amazonaws.com'` hostname:
+
+```ruby
+Rails.application.configure do
+  config.imgix = {
+    source: "my-imgix-source.imgix.net",
+    hostname_to_replace: "s3.amazonaws.com"
+  }
+end
+```
+
+Now when you call `ix_image_tag` or another helper, you get an imgix URL:
+
+```erb
+<%= ix_image_tag(@user.avatar_url) %>
+```
+
+Renders:
+
+```html
+<img src="https://my-imgix-source.imgix.net/my-bucket/users/1.png" />
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
