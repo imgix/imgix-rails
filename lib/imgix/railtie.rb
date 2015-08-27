@@ -5,8 +5,14 @@ require "imgix/rails/view_helper"
 
 module Imgix
   module Rails
-    class Railtie < Rails::Railtie
-      initializer "imgix-rails.view_helper" do
+    class Railtie < ::Rails::Railtie
+      config.imgix = ActiveSupport::OrderedOptions.new
+
+      initializer "imgix-rails.view_helper" do |app|
+        Imgix::Rails.configure do |config|
+          config.imgix = app.config.imgix
+        end
+
         ActionView::Base.send :include, ViewHelper
       end
     end

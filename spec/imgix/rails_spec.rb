@@ -14,6 +14,10 @@ describe Imgix::Rails do
     end.new
   end
 
+  before do
+    Imgix::Rails.configure { |config| config.imgix = {} }
+  end
+
   it 'has a version number' do
     expect(Imgix::Rails::VERSION).not_to be nil
   end
@@ -27,7 +31,7 @@ describe Imgix::Rails do
     let(:source) { "assets.imgix.net" }
 
     before do
-      app.config.imgix = {}
+      Imgix::Rails.configure { |config| config.imgix = {} }
     end
 
     it 'expects config.imgix.source to be defined' do
@@ -37,7 +41,7 @@ describe Imgix::Rails do
     end
 
     it 'expects config.imgix.source to be a String or an Array' do
-      app.config.imgix = { source: 1 }
+      Imgix::Rails.configure { |config| config.imgix = { source: 1 } }
 
       expect{
         helper.ix_image_tag("assets.png")
@@ -45,10 +49,12 @@ describe Imgix::Rails do
     end
 
     it 'optionally expects config.imgix.secure_url_token to be defined' do
-      app.config.imgix = {
-        source: 'assets.imgix.net',
-        secure_url_token: 'FACEBEEF'
-      }
+      Imgix::Rails.configure do |config|
+        config.imgix = {
+          source: 'assets.imgix.net',
+          secure_url_token: 'FACEBEEF'
+        }
+      end
 
       expect{
         helper.ix_image_tag("assets.png")
@@ -63,25 +69,38 @@ describe Imgix::Rails do
       let(:source) { "assets.imgix.net" }
 
       before do
-        app.config.imgix = {
-          source: source
-        }
+        Imgix::Rails.configure { |config| config.imgix = { source: source } }
       end
 
       it 'does not remove a hostname for a fully-qualified URL' do
-        app.config.imgix[:hostname_to_replace] = hostname
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source,
+            hostname_to_replace: hostname
+          }
+        end
 
         expect(helper.ix_image_tag("https://adifferenthostname.com/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/https%3A%2F%2Fadifferenthostname.com%2Fimage.jpg?ixlib=rails-0.1.0&h=300&w=400\" alt=\"Https%3a%2f%2fadifferenthostname.com%2fimage.jpg?ixlib=rails 0.1\" />"
       end
 
       it 'removes a single hostname' do
-        app.config.imgix[:hostname_to_replace] = hostname
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source,
+            hostname_to_replace: hostname
+          }
+        end
 
         expect(helper.ix_image_tag("https://#{hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&h=300&w=400\" alt=\"Image.jpg?ixlib=rails 0.1\" />"
       end
 
       it 'removes multiple configured protocol/hostname combos' do
-        app.config.imgix[:hostnames_to_replace] = [another_hostname, yet_another_hostname]
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source,
+            hostnames_to_replace: [another_hostname, yet_another_hostname]
+          }
+        end
 
         expect(helper.ix_image_tag("https://#{another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&h=300&w=400\" alt=\"Image.jpg?ixlib=rails 0.1\" />"
         expect(helper.ix_image_tag("https://#{yet_another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-0.1.0&h=300&w=400\" alt=\"Image.jpg?ixlib=rails 0.1\" />"
@@ -94,9 +113,7 @@ describe Imgix::Rails do
     let(:source) { "assets.imgix.net" }
 
     before do
-      app.config.imgix = {
-        source: source
-      }
+      Imgix::Rails.configure { |config| config.imgix = { source: source } }
     end
 
     describe '#ix_image_tag' do
@@ -117,8 +134,14 @@ describe Imgix::Rails do
       end
 
       it 'signs an image path if a :secure_url_token is given' do
-        app.config.imgix[:secure_url_token] = "FOO123bar"
-        app.config.imgix[:include_library_param] = false
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source,
+            secure_url_token: "FOO123bar",
+            include_library_param: false
+          }
+        end
+
         expect(helper.ix_image_tag("/users/1.png")).to eq "<img src=\"http://assets.imgix.net/users/1.png?&s=3d97566c016f6e1e6679bf981941e6f4\" alt=\"1\" />"
       end
     end
@@ -128,9 +151,7 @@ describe Imgix::Rails do
       let(:source) { "assets.imgix.net" }
 
       before do
-        app.config.imgix = {
-          source: source
-        }
+        Imgix::Rails.configure { |config| config.imgix = { source: source } }
       end
 
       it 'generates a 1x and 2x image using `srcset` by default' do

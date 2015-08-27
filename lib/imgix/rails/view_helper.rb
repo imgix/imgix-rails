@@ -1,3 +1,5 @@
+require "imgix"
+
 module Imgix
   module Rails
     class ConfigurationError < StandardError; end
@@ -30,7 +32,7 @@ module Imgix
     private
 
       def validate_configuration!
-        imgix = config.imgix
+        imgix = ::Imgix::Rails.config.imgix
         unless imgix.try(:[], :source)
           raise ConfigurationError.new("imgix source is not configured. Please set config.imgix[:source].")
         end
@@ -55,26 +57,23 @@ module Imgix
 
       def client
         return @client if @client
+        imgix = ::Imgix::Rails.config.imgix
 
         opts = {
-          host: config.imgix[:source],
+          host: imgix[:source],
           library_param: "rails",
           library_version: Imgix::Rails::VERSION
         }
 
-        if config.imgix[:secure_url_token].present?
-          opts[:token] = config.imgix[:secure_url_token]
+        if imgix[:secure_url_token].present?
+          opts[:token] = imgix[:secure_url_token]
         end
 
-        if config.imgix.has_key?(:include_library_param)
-          opts[:include_library_param] = config.imgix[:include_library_param]
+        if imgix.has_key?(:include_library_param)
+          opts[:include_library_param] = imgix[:include_library_param]
         end
 
-        @client = Imgix::Client.new(opts)
-      end
-
-      def config
-        ::Rails.application.config
+        @client = ::Imgix::Client.new(opts)
       end
 
       def available_parameters
@@ -95,11 +94,11 @@ module Imgix
       end
 
       def configured_resolutions
-        config.imgix[:responsive_resolutions] || [1, 2]
+        ::Imgix::Rails.config.imgix[:responsive_resolutions] || [1, 2]
       end
 
       def hostnames_to_remove
-        Array(config.imgix[:hostname_to_replace] || config.imgix[:hostnames_to_replace])
+        Array(::Imgix::Rails.config.imgix[:hostname_to_replace] || ::Imgix::Rails.config.imgix[:hostnames_to_replace])
       end
     end
   end
