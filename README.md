@@ -1,5 +1,7 @@
 # imgix-rails
 
+[![Build Status](https://travis-ci.org/imgix/imgix-rails.png?branch=master)](https://travis-ci.org/imgix/imgix-rails)
+
 `imgix-rails` is a gem designed to make integrating imgix into your Rails app easier. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces.
 
 imgix is a real-time image processing service and CDN. It allows you to manipulate images merely by changing their URL parameters. For a full list of URL parameters, please see the [imgix URL API documentation](https://www.imgix.com/docs/reference).
