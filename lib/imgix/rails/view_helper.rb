@@ -86,6 +86,7 @@ module Imgix
       end
 
       def srcset_for(source, options={})
+        source = replace_hostname(source)
         configured_resolutions.map do |resolution|
           srcset_options = options.slice(*available_parameters)
           srcset_options[:dpr] = resolution unless resolution == 1
