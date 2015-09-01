@@ -149,6 +149,7 @@ describe Imgix::Rails do
     describe '#ix_responsive_image_tag' do
       let(:app) { Class.new(::Rails::Application) }
       let(:source) { "assets.imgix.net" }
+      let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
 
       before do
         Imgix::Rails.configure { |config| config.imgix = { source: source } }
@@ -156,6 +157,17 @@ describe Imgix::Rails do
 
       it 'generates a 1x and 2x image using `srcset` by default' do
         expect(helper.ix_responsive_image_tag("image.jpg")).to eq "<img srcset=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+      end
+
+      it 'replaces the hostname' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source,
+            hostnames_to_replace: [another_hostname]
+          }
+        end
+
+        expect(helper.ix_responsive_image_tag("https://#{another_hostname}/image.jpg")).to eq "<img srcset=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
       end
     end
 
