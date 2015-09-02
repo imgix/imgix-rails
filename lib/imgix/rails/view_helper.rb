@@ -62,7 +62,8 @@ module Imgix
         opts = {
           host: imgix[:source],
           library_param: "rails",
-          library_version: Imgix::Rails::VERSION
+          library_version: Imgix::Rails::VERSION,
+          secure: true
         }
 
         if imgix[:secure_url_token].present?
@@ -71,6 +72,10 @@ module Imgix
 
         if imgix.has_key?(:include_library_param)
           opts[:include_library_param] = imgix[:include_library_param]
+        end
+
+        if imgix.has_key?(:secure)
+          opts[:secure] = imgix[:secure]
         end
 
         @client = ::Imgix::Client.new(opts)
