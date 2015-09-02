@@ -61,6 +61,29 @@ describe Imgix::Rails do
       }.not_to raise_error
     end
 
+    describe ':secure' do
+      it 'defaults to https' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source
+          }
+        end
+
+        expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+      end
+
+      it 'respects the :secure flag' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source,
+            secure: false
+          }
+        end
+
+        expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+      end
+    end
+
     describe 'hostname removal' do
       let(:hostname) { 's3.amazonaws.com' }
       let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
@@ -80,7 +103,7 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("https://adifferenthostname.com/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/https%3A%2F%2Fadifferenthostname.com%2Fimage.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Https%3a%2f%2fadifferenthostname.com%2fimage.jpg?ixlib=rails #{truncated_version}\" />"
+        expect(helper.ix_image_tag("https://adifferenthostname.com/image.jpg", w: 400, h: 300)).to eq "<img src=\"https://assets.imgix.net/https%3A%2F%2Fadifferenthostname.com%2Fimage.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Https%3a%2f%2fadifferenthostname.com%2fimage.jpg?ixlib=rails #{truncated_version}\" />"
       end
 
       it 'removes a single hostname' do
@@ -91,7 +114,7 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("https://#{hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        expect(helper.ix_image_tag("https://#{hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
       end
 
       it 'removes multiple configured protocol/hostname combos' do
@@ -102,8 +125,8 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("https://#{another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
-        expect(helper.ix_image_tag("https://#{yet_another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        expect(helper.ix_image_tag("https://#{another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        expect(helper.ix_image_tag("https://#{yet_another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
       end
     end
   end
@@ -118,7 +141,7 @@ describe Imgix::Rails do
 
     describe '#ix_image_tag' do
       it 'prints an image_tag' do
-        expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
       end
 
       it 'signs image URLs with ixlib=rails' do
@@ -126,11 +149,11 @@ describe Imgix::Rails do
       end
 
       it 'injects any imgix parameters given' do
-        expect(helper.ix_image_tag("image.jpg", { w: 400, h: 300 })).to eq "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        expect(helper.ix_image_tag("image.jpg", { w: 400, h: 300 })).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
       end
 
       it 'passes through non-imgix tags' do
-        expect(helper.ix_image_tag("image.jpg", { alt: "No Church in the Wild", w: 400, h: 300 })).to eq "<img alt=\"No Church in the Wild\" src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" />"
+        expect(helper.ix_image_tag("image.jpg", { alt: "No Church in the Wild", w: 400, h: 300 })).to eq "<img alt=\"No Church in the Wild\" src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" />"
       end
 
       it 'signs an image path if a :secure_url_token is given' do
@@ -142,7 +165,7 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("/users/1.png")).to eq "<img src=\"http://assets.imgix.net/users/1.png?&s=3d97566c016f6e1e6679bf981941e6f4\" alt=\"1\" />"
+        expect(helper.ix_image_tag("/users/1.png")).to eq "<img src=\"https://assets.imgix.net/users/1.png?&s=3d97566c016f6e1e6679bf981941e6f4\" alt=\"1\" />"
       end
     end
 
@@ -156,7 +179,7 @@ describe Imgix::Rails do
       end
 
       it 'generates a 1x and 2x image using `srcset` by default' do
-        expect(helper.ix_responsive_image_tag("image.jpg")).to eq "<img srcset=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        expect(helper.ix_responsive_image_tag("image.jpg")).to eq "<img srcset=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
       end
 
       it 'replaces the hostname' do
@@ -167,13 +190,13 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_responsive_image_tag("https://#{another_hostname}/image.jpg")).to eq "<img srcset=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        expect(helper.ix_responsive_image_tag("https://#{another_hostname}/image.jpg")).to eq "<img srcset=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
       end
     end
 
     describe '#ix_picture_tag' do
       it 'generates a picture tag' do
-        expect(helper.ix_picture_tag("image.jpg")).to eq "<picture><source srcset=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" /><img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" /></picture>"
+        expect(helper.ix_picture_tag("image.jpg")).to eq "<picture><source srcset=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" /><img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" /></picture>"
       end
     end
   end
