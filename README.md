@@ -31,11 +31,17 @@ Before you get started, you will need to define your imgix configuration in your
 ```ruby
 Rails.application.configure do
   config.imgix = {
-    source: "Name of your source, e.g. assets.imgix.net",
-    secure_url_token: "optional secure URL token found in your dashboard (https://webapp.imgix.com)"
+    source: "Name of your source, e.g. assets.imgix.net"
   }
 end
 ```
+
+The following configuration flags will be respected:
+
+- `:secure:` toggles the use of HTTPS. Deafults to `true`
+- `:source` a String or Array that specifies the imgix Source address. Should be in the form of `"assets.imgix.net"`.
+- `:secure_url_token` a optional secure URL token found in your dashboard (https://webapp.imgix.com) used for signing requests
+- `:hostnames_to_remove` an Array of hostnames to replace with the value(s) specified by `:source`. This is useful if you store full-qualified S3 URLs in your database, but want to serve images through imgix.
 
 ### ix_image_tag
 
