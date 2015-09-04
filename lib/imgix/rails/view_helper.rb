@@ -101,7 +101,7 @@ module Imgix
         configured_resolutions.map do |resolution|
           srcset_options = options.slice(*available_parameters)
           srcset_options[:dpr] = resolution unless resolution == 1
-          ix_image_url(source, srcset_options) + " #{resolution}x"
+          "#{ix_image_url(source, srcset_options)} #{resolution}x"
         end.join(', ')
       end
 
