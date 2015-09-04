@@ -5,13 +5,19 @@ module Imgix
     class ConfigurationError < StandardError; end
 
     module ViewHelper
-      def ix_image_tag(source, options={})
+      def ix_image_url(source, options = {})
         validate_configuration!
 
         source = replace_hostname(source)
+
+        client.path(source).to_url(options).html_safe
+      end
+
+      def ix_image_tag(source, options={})
+        source = replace_hostname(source)
         normal_opts = options.slice!(*available_parameters)
 
-        image_tag(client.path(source).to_url(options).html_safe, normal_opts)
+        image_tag(ix_image_url(source, options), normal_opts)
       end
 
       def ix_responsive_image_tag(source, options={})

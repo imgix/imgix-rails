@@ -2,6 +2,8 @@ require 'spec_helper'
 require 'rails'
 require 'action_view'
 require 'imgix/rails/view_helper'
+require 'uri'
+require 'cgi'
 
 describe Imgix::Rails do
   let(:truncated_version) { Imgix::Rails::VERSION.split(".").first(2).join(".") }
@@ -139,21 +141,21 @@ describe Imgix::Rails do
       Imgix::Rails.configure { |config| config.imgix = { source: source } }
     end
 
-    describe '#ix_image_tag' do
-      it 'prints an image_tag' do
-        expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+    describe '#ix_image_url' do
+      it 'prints an image URL' do
+        expect(helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
       end
 
       it 'signs image URLs with ixlib=rails' do
-        expect(helper.ix_image_tag("image.jpg")).to include("ixlib=rails-")
+        expect(helper.ix_image_url("image.jpg")).to include("ixlib=rails-")
       end
 
       it 'injects any imgix parameters given' do
-        expect(helper.ix_image_tag("image.jpg", { w: 400, h: 300 })).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
-      end
+        image_url = URI.parse(helper.ix_image_url("image.jpg", { h: 300,  w: 400 }))
+        url_query = CGI::parse(image_url.query)
 
-      it 'passes through non-imgix tags' do
-        expect(helper.ix_image_tag("image.jpg", { alt: "No Church in the Wild", w: 400, h: 300 })).to eq "<img alt=\"No Church in the Wild\" src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" />"
+        expect(url_query['w']).to eq ['400']
+        expect(url_query['h']).to eq ['300']
       end
 
       it 'signs an image path if a :secure_url_token is given' do
@@ -165,7 +167,17 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("/users/1.png")).to eq "<img src=\"https://assets.imgix.net/users/1.png?&s=3d97566c016f6e1e6679bf981941e6f4\" alt=\"1\" />"
+        expect(helper.ix_image_url("/users/1.png")).to eq "https://assets.imgix.net/users/1.png?&s=3d97566c016f6e1e6679bf981941e6f4"
+      end
+    end
+
+    describe '#ix_image_tag' do
+      it 'prints an image_tag' do
+        expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+      end
+
+      it 'passes through non-imgix tags' do
+        expect(helper.ix_image_tag("image.jpg", { alt: "No Church in the Wild", w: 400, h: 300 })).to eq "<img alt=\"No Church in the Wild\" src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" />"
       end
     end
 
