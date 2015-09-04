@@ -143,11 +143,13 @@ describe Imgix::Rails do
 
     describe '#ix_image_url' do
       it 'prints an image URL' do
-        expect(helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
+        expect(helper.ix_image_url("image.jpg")).to eq "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
       end
 
       it 'signs image URLs with ixlib=rails' do
-        expect(helper.ix_image_url("image.jpg")).to include("ixlib=rails-")
+        image_url = URI.parse(helper.ix_image_url("image.jpg", { h: 300,  w: 400 }))
+        url_query = CGI::parse(image_url.query)
+        expect(url_query['ixlib']).to eq ["rails-#{Imgix::Rails::VERSION}"]
       end
 
       it 'injects any imgix parameters given' do
