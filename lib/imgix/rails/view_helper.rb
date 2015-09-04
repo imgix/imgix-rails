@@ -5,7 +5,7 @@ module Imgix
     class ConfigurationError < StandardError; end
 
     module ViewHelper
-      def ix_image_url(source, options = {})
+      def ix_image_url(source, options={})
         validate_configuration!
 
         source = replace_hostname(source)
