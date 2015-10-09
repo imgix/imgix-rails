@@ -115,6 +115,20 @@ Will generate the following HTML:
 </picture>
 ```
 
+### ix_image_url
+
+The `ix_image_url` helper makes it easy to generate a URL to an image in your Rails app.
+
+```erb
+<%= ix_image_url('/users/1/avatar.png', { w: 400, h: 300 }) %>
+```
+
+Will generate the following URL:
+
+```html
+https://assets.imgix.net/image.jpg?ixlib=rails-0.3.0
+```
+
 ### Hostname Removal
 
 You can also configure imgix-rails to disregard given hostnames and only use the path component from given URLs. This is useful if you have [a Web Folder or an Amazon S3 imgix Source configured](https://www.imgix.com/docs/tutorials/creating-sources) but store the fully-qualified URLs for those resources in your database.
