@@ -126,7 +126,7 @@ The `ix_image_url` helper makes it easy to generate a URL to an image in your Ra
 Will generate the following URL:
 
 ```html
-https://assets.imgix.net/image.jpg?ixlib=rails-0.3.0
+https://assets.imgix.net/users/1/avatar.png?w=400&h=300
 ```
 
 ### Hostname Removal
