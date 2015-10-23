@@ -62,7 +62,7 @@ module Imgix
       end
 
       def client
-        return @client if @client
+        return @imgix_client if @imgix_client
         imgix = ::Imgix::Rails.config.imgix
 
         opts = {
@@ -84,7 +84,7 @@ module Imgix
           opts[:secure] = imgix[:secure]
         end
 
-        @client = ::Imgix::Client.new(opts)
+        @imgix_client = ::Imgix::Client.new(opts)
       end
 
       def available_parameters
