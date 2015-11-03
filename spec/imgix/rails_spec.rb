@@ -181,6 +181,10 @@ describe Imgix::Rails do
       it 'passes through non-imgix tags' do
         expect(helper.ix_image_tag("image.jpg", { alt: "No Church in the Wild", w: 400, h: 300 })).to eq "<img alt=\"No Church in the Wild\" src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" />"
       end
+
+      it 'applies the client-hints parameter' do
+        expect(helper.ix_image_tag("image.jpg", ch: "Width,DPR")).to eq  "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+      end
     end
 
     describe '#ix_responsive_image_tag' do
