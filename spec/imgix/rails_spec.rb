@@ -63,7 +63,7 @@ describe Imgix::Rails do
       }.not_to raise_error
     end
 
-    describe ':secure' do
+    describe ':use_https' do
       it 'defaults to https' do
         Imgix::Rails.configure do |config|
           config.imgix = {
@@ -74,11 +74,11 @@ describe Imgix::Rails do
         expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
       end
 
-      it 'respects the :secure flag' do
+      it 'respects the :use_https flag' do
         Imgix::Rails.configure do |config|
           config.imgix = {
             source: source,
-            secure: false
+            use_https: false
           }
         end
 
@@ -169,13 +169,13 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_url("/users/1.png")).to eq "https://assets.imgix.net/users/1.png?&s=3d97566c016f6e1e6679bf981941e6f4"
+        expect(helper.ix_image_url("/users/1.png")).to eq "https://assets.imgix.net/users/1.png?s=6797c24146142d5b40bde3141fd3600c"
       end
     end
 
     describe '#ix_image_tag' do
       it 'prints an image_tag' do
-        expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        expect(helper.ix_image_tag("image.jpg")).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
       end
 
       it 'passes through non-imgix tags' do
