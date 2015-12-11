@@ -1,5 +1,5 @@
 require "imgix"
-require 'imgix/rails/url_helper'
+require "imgix/rails/url_helper"
 
 module Imgix
   module Rails

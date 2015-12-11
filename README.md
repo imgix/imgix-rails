@@ -129,6 +129,15 @@ Will generate the following URL:
 https://assets.imgix.net/users/1/avatar.png?w=400&h=300
 ```
 
+Since `ix_image_url` lives inside `UrlHelper`, it can also be used in places other than your views quite easily. This is useful for things such as including imgix URLs in JSON output from a serializer class.
+
+```ruby
+include Imgix::Rails::UrlHelper
+
+puts ix_image_url('/users/1/avatar.png', { w: 400, h: 300 })
+# => https://assets.imgix.net/users/1/avatar.png?w=400&h=300
+```
+
 ### Hostname Removal
 
 You can also configure imgix-rails to disregard given hostnames and only use the path component from given URLs. This is useful if you have [a Web Folder or an Amazon S3 imgix Source configured](https://www.imgix.com/docs/tutorials/creating-sources) but store the fully-qualified URLs for those resources in your database.
