@@ -49,19 +49,16 @@ module Imgix
           host: imgix[:source],
           library_param: "rails",
           library_version: Imgix::Rails::VERSION,
-          secure: true
+          use_https: true,
+          secure_url_token: imgix[:secure_url_token]
         }
-
-        if imgix[:secure_url_token].present?
-          opts[:token] = imgix[:secure_url_token]
-        end
 
         if imgix.has_key?(:include_library_param)
           opts[:include_library_param] = imgix[:include_library_param]
         end
 
-        if imgix.has_key?(:secure)
-          opts[:secure] = imgix[:secure]
+        if imgix.has_key?(:use_https)
+          opts[:use_https] = imgix[:use_https]
         end
 
         @imgix_client = ::Imgix::Client.new(opts)

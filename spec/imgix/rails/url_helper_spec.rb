@@ -51,7 +51,7 @@ describe Imgix::Rails::UrlHelper do
       }.not_to raise_error
     end
 
-    describe ':secure' do
+    describe ':use_https' do
       it 'defaults to https' do
         Imgix::Rails.configure do |config|
           config.imgix = {
@@ -62,11 +62,11 @@ describe Imgix::Rails::UrlHelper do
         expect(url_helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
       end
 
-      it 'respects the :secure flag' do
+      it 'respects the :use_https flag' do
         Imgix::Rails.configure do |config|
           config.imgix = {
             source: source,
-            secure: false
+            use_https: false
           }
         end
 
