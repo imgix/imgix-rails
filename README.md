@@ -1,13 +1,29 @@
-# imgix-rails
+[![imgix logo](https://assets.imgix.net/imgix-logo-web-2014.pdf?page=2&fm=png&w=200&h=200)](https://imgix.com)
 
-[![Build Status](https://travis-ci.org/imgix/imgix-rails.png?branch=master)](https://travis-ci.org/imgix/imgix-rails)
+# imgix-rails [![Build Status](https://travis-ci.org/imgix/imgix-rails.svg?branch=master)](https://travis-ci.org/imgix/imgix-rails) [![Slack Status](http://slack.imgix.com/badge.svg)](http://slack.imgix.com)
 
 `imgix-rails` is a gem designed to make integrating imgix into your Rails app easier. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces.
 
 imgix is a real-time image processing service and CDN. It allows you to manipulate images merely by changing their URL parameters. For a full list of URL parameters, please see the [imgix URL API documentation](https://www.imgix.com/docs/reference).
 
-We recommend using something like [Paperclip](https://github.com/thoughtbot/paperclip), [Carrierwave](https://github.com/carrierwaveuploader/carrierwave), or [s3_direct_upload](https://github.com/waynehoover/s3_direct_upload) to handle uploads and then serving the images out using this gem.
+We recommend using something like [Paperclip](https://github.com/thoughtbot/paperclip), [Refile](https://github.com/refile/refile), [Carrierwave](https://github.com/carrierwaveuploader/carrierwave), or [s3_direct_upload](https://github.com/waynehoover/s3_direct_upload) to handle uploads. After they've been uploaded, you can then serve them using this gem.
 
+* [Installation](#installation)
+* [Usage](#usage)
+  * [Configuration](#configuration)
+  * [ix_image_tag](#ix_image_tag)
+  * [ix_responsive_image_tag](#ix_responsive_image_tag)
+  * [ix_picture_tag](#ix_picture_tag)
+  * [ix_image_url](#ix_image_url)
+  * [Hostname Removal](#hostname-removal)
+* [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
+  * [Paperclip](#paperclip)
+  * [Refile](#refile)
+* [Development](#development)
+* [Contributing](#contributing)
+
+
+<a name="installation"></a>
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -20,10 +36,13 @@ And then execute:
 
     $ bundle
 
+
+<a name="usage"></a>
 ## Usage
 
 imgix-rails provides a few different hooks to work with your existing Rails application. All current methods are drop-in replacements for the `image_tag` helper.
 
+<a name="configuration"></a>
 ### Configuration
 
 Before you get started, you will need to define your imgix configuration in your `config/application.rb`, or in an environment-specific configuration file.
@@ -43,6 +62,7 @@ The following configuration flags will be respected:
 - `:secure_url_token` a optional secure URL token found in your dashboard (https://webapp.imgix.com) used for signing requests
 - `:hostnames_to_replace` an Array of hostnames to replace with the value(s) specified by `:source`. This is useful if you store full-qualified S3 URLs in your database, but want to serve images through imgix.
 
+<a name="ix_image_tag"></a>
 ### ix_image_tag
 
 The simplest way of working with imgix-rails is to use the `ix_image_tag`, this allows you to pass parameters to imgix to handle things like resizing, cropping, etc.
@@ -71,6 +91,7 @@ Then rendering the portrait in your application is very easy:
 <%= profile_image_tag(@user) %>
 ```
 
+<a name="ix_responsive_image_tag"></a>
 ### ix_responsive_image_tag
 
 The `ix_responsive_image_tag` helper method makes it easy to bring responsive imagery to your Rails app. We talk a bit about using the `srcset` attribute in an application in the following blog post: [“Responsive Images with `srcset` and imgix.”](http://blog.imgix.com/post/127012184664/responsive-images-with-srcset-imgix)
@@ -93,6 +114,7 @@ This will generate the following HTML:
 />
 ```
 
+<a name="ix_picture_tag"></a>
 ### ix_picture_tag
 
 The `ix_picture_tag` helper method makes it easy to generate `<picture>` elements in your Rails app.
@@ -115,6 +137,7 @@ Will generate the following HTML:
 </picture>
 ```
 
+<a name="ix_image_url"></a>
 ### ix_image_url
 
 The `ix_image_url` helper makes it easy to generate a URL to an image in your Rails app.
@@ -171,12 +194,64 @@ Renders:
 <img src="https://my-imgix-source.imgix.net/my-bucket/users/1.png" />
 ```
 
+
+<a name="using-with-image-uploading-libraries"></a>
+## Using With Image Uploading Libraries
+
+imgix-rails plays well with image uploading libraries, because it just requires a URL and optional parameters as arguments. A good way to handle this interaction is by creating helpers that bridge between your uploading library of choice and imgix-rails. Below are examples of how this can work with some common libraries. Please submit an issue if you'd like to see specific examples for another!
+
+
+<a name="paperclip"></a>
+### Paperclip
+
+Paperclip can directly provide paths to uploaded images, so we can use it with imgix-rails without a bridge.
+
+``` html
+<%= ix_image_tag(@user.avatar.path, { auto: 'format', fit: 'crop', w: 500}) %>
+```
+
+
+<a name="refile"></a>
+### Refile
+
+Since Refile doesn't actually store URLs or paths in the database (instead using a "prefix" + image identifier), the basic setup is slightly different. In this case, we use a couple helpers that bridge between Refile and imgix-rails.
+
+``` ruby
+module ImgixRefileHelper
+  def ix_refile_image_url(obj, key, **opts)
+    path = s3_path(obj, key)
+    path ? ix_image_url(path, opts) : ''
+  end
+
+  def ix_refile_image_tag(obj, key, **opts)
+    path = s3_path(obj, key)
+    path ? ix_image_tag(path, opts) : ''
+  end
+
+private
+  def s3_path(obj, key)
+    refile_id = obj["#{key}_id"]
+    s3_prefix = obj.send(key).try(:backend).instance_variable_get(:@prefix)
+
+    s3_prefix ? "#{s3_prefix}/#{refile_id}" : nil
+  end
+end
+```
+
+``` html
+<%= ix_refile_image_tag(@blog_post, :hero_photo, {auto: 'format', fit: 'crop', w: 500}) %>
+```
+
+
+<a name="development"></a>
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release` to create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+
+<a name="contributing"></a>
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/imgix-rails/fork )
