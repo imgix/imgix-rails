@@ -17,7 +17,7 @@ We recommend using something like [Paperclip](https://github.com/thoughtbot/pape
   * [ix_image_url](#ix_image_url)
   * [Hostname Removal](#hostname-removal)
 * [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
-  * [Paperclip](#paperclip)
+  * [Paperclip and CarrierWave](#paperclip-and-carrierwave)
   * [Refile](#refile)
 * [Development](#development)
 * [Contributing](#contributing)
@@ -201,10 +201,10 @@ Renders:
 imgix-rails plays well with image uploading libraries, because it just requires a URL and optional parameters as arguments. A good way to handle this interaction is by creating helpers that bridge between your uploading library of choice and imgix-rails. Below are examples of how this can work with some common libraries. Please submit an issue if you'd like to see specific examples for another!
 
 
-<a name="paperclip"></a>
-### Paperclip
+<a name="paperclip-and-carrierwave"></a>
+### Paperclip and CarrierWave
 
-Paperclip can directly provide paths to uploaded images, so we can use it with imgix-rails without a bridge.
+Paperclip and CarrierWave can directly provide paths to uploaded images, so we can use them with imgix-rails without a bridge.
 
 ``` html
 <%= ix_image_tag(@user.avatar.path, { auto: 'format', fit: 'crop', w: 500}) %>
