@@ -6,7 +6,7 @@ class Imgix::Rails::PictureTag < Imgix::Rails::Tag
 
   def render
     content_tag(:picture) do
-      concat(tag(:source, srcset: srcset_for(@source, @options)))
+      concat(tag(:source, srcset: srcset))
       concat(Imgix::Rails::ImageTag.new(@source, @options).render)
     end
   end

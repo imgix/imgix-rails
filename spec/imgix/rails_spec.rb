@@ -196,8 +196,24 @@ describe Imgix::Rails do
         Imgix::Rails.configure { |config| config.imgix = { source: source } }
       end
 
-      it 'generates a 1x and 2x image using `srcset` by default' do
-        expect(helper.ix_responsive_image_tag("image.jpg")).to eq "<img srcset=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+      it 'generates the expected number of srcset values' do
+        tag = Nokogiri::XML(helper.ix_responsive_image_tag("image.jpg")).root
+        expect(tag.attribute('srcset').value.split(',').size).to eq(117)
+      end
+
+      context "with sizes" do
+        let(:sizes_value) { "(min-width: 800px) 800px, 100vw" }
+        let(:tag) do
+          Nokogiri::XML(helper.ix_responsive_image_tag("image.jpg", sizes: sizes_value)).root
+        end
+
+        it 'generates the expected number of srcset values' do
+          expect(tag.attribute('srcset').value.split(',').size).to eq(20)
+        end
+
+        it 'carries the sizes value through to the HTML' do
+          expect(tag.attribute('sizes').value).to eq(sizes_value)
+        end
       end
 
       it 'replaces the hostname' do
@@ -208,13 +224,16 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_responsive_image_tag("https://#{another_hostname}/image.jpg")).to eq "<img srcset=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        tag = Nokogiri::XML(helper.ix_responsive_image_tag("https://#{another_hostname}/image.jpg")).root
+        expect(tag.attribute('srcset').value).not_to include(another_hostname)
       end
     end
 
     describe '#ix_picture_tag' do
       it 'generates a picture tag' do
-        expect(helper.ix_picture_tag("image.jpg")).to eq "<picture><source srcset=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION} 1x, https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&amp;dpr=2 2x\" /><img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" /></picture>"
+        tag = Nokogiri::XML(helper.ix_picture_tag("image.jpg")).root
+        expect(tag.name).to eq('picture')
+        expect(tag.children.size).to eq(2)
       end
     end
   end

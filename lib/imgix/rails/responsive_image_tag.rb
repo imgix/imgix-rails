@@ -3,7 +3,7 @@ require "imgix/rails/tag"
 class Imgix::Rails::ResponsiveImageTag < Imgix::Rails::ImageTag
   def render
     @options.merge!({
-      srcset: srcset_for(@source, @options)
+      srcset: srcset
     })
 
     super
