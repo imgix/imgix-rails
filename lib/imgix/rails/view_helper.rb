@@ -1,5 +1,7 @@
 require "imgix"
-require "imgix/rails/url_helper"
+require "imgix/rails/image_tag"
+require "imgix/rails/responsive_image_tag"
+require "imgix/rails/picture_tag"
 
 module Imgix
   module Rails
@@ -7,49 +9,15 @@ module Imgix
       include UrlHelper
 
       def ix_image_tag(source, options={})
-        source = replace_hostname(source)
-        normal_opts = options.slice!(*available_parameters)
-
-        image_tag(ix_image_url(source, options), normal_opts)
+        Imgix::Rails::ImageTag.new(source, options).render
       end
 
       def ix_responsive_image_tag(source, options={})
-        options.merge!({
-          srcset: srcset_for(source, options)
-        })
-
-        ix_image_tag(source, options)
+        Imgix::Rails::ResponsiveImageTag.new(source, options).render
       end
 
       def ix_picture_tag(source, options={})
-        content_tag(:picture) do
-          concat(tag(:source, srcset: srcset_for(source, options)))
-          concat(ix_image_tag(source, options))
-        end
-      end
-
-    private
-
-      def available_parameters
-        @available_parameters ||= parameters.keys
-      end
-
-      def parameters
-        path = File.expand_path("../../../../vendor/parameters.json", __FILE__)
-        @parameters ||= JSON.parse(File.read(path), symbolize_names: true)[:parameters]
-      end
-
-      def srcset_for(source, options={})
-        source = replace_hostname(source)
-        configured_resolutions.map do |resolution|
-          srcset_options = options.slice(*available_parameters)
-          srcset_options[:dpr] = resolution unless resolution == 1
-          "#{ix_image_url(source, srcset_options)} #{resolution}x"
-        end.join(', ')
-      end
-
-      def configured_resolutions
-        ::Imgix::Rails.config.imgix[:responsive_resolutions] || [1, 2]
+        Imgix::Rails::PictureTag.new(source, options).render
       end
     end
   end
