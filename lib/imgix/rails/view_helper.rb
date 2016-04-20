@@ -5,7 +5,7 @@ require "imgix/rails/picture_tag"
 
 module Imgix
   module Rails
-   module ViewHelper
+    module ViewHelper
       include UrlHelper
 
       def ix_image_tag(source, options={})
