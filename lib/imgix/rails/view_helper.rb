@@ -1,6 +1,5 @@
 require "imgix"
 require "imgix/rails/image_tag"
-require "imgix/rails/responsive_image_tag"
 require "imgix/rails/picture_tag"
 
 module Imgix
@@ -10,10 +9,6 @@ module Imgix
 
       def ix_image_tag(source, options={})
         Imgix::Rails::ImageTag.new(source, options).render
-      end
-
-      def ix_responsive_image_tag(source, options={})
-        Imgix::Rails::ResponsiveImageTag.new(source, options).render
       end
 
       def ix_picture_tag(source, options={})

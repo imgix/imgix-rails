@@ -2,6 +2,8 @@ require "imgix/rails/tag"
 
 class Imgix::Rails::ImageTag < Imgix::Rails::Tag
   def render
+    @options[:srcset] = srcset
+
     @source = replace_hostname(@source)
     normal_opts = @options.slice!(*self.class.available_parameters)
 

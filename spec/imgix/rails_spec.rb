@@ -71,7 +71,8 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
+        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}")
       end
 
       it 'respects the :use_https flag' do
@@ -82,7 +83,8 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("image.jpg")).to eq  "<img src=\"http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
+        expect(tag.attribute('src').value).to eq("http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}")
       end
     end
 
@@ -105,7 +107,9 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("https://adifferenthostname.com/image.jpg", w: 400, h: 300)).to eq "<img src=\"https://assets.imgix.net/https%3A%2F%2Fadifferenthostname.com%2Fimage.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Https%3a%2f%2fadifferenthostname.com%2fimage.jpg?ixlib=rails #{truncated_version}\" />"
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://adifferenthostname.com/image.jpg", w: 400, h: 300)).children[0]
+
+        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/https%3A%2F%2Fadifferenthostname.com%2Fimage.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400")
       end
 
       it 'removes a single hostname' do
@@ -116,7 +120,8 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("https://#{hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://#{hostname}/image.jpg", w: 400, h: 300)).children[0]
+        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400")
       end
 
       it 'removes multiple configured protocol/hostname combos' do
@@ -127,8 +132,11 @@ describe Imgix::Rails do
           }
         end
 
-        expect(helper.ix_image_tag("https://#{another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
-        expect(helper.ix_image_tag("https://#{yet_another_hostname}/image.jpg", w: 400, h: 300)).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://#{another_hostname}/image.jpg", w: 400, h: 300)).children[0]
+        another_tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://#{yet_another_hostname}/image.jpg", w: 400, h: 300)).children[0]
+
+        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400")
+        expect(another_tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400")
       end
     end
   end
@@ -175,63 +183,72 @@ describe Imgix::Rails do
 
     describe '#ix_image_tag' do
       it 'prints an image_tag' do
-        expect(helper.ix_image_tag("image.jpg")).to eq "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
+
+        expect(tag.name).to eq('img')
       end
 
       it 'passes through non-imgix tags' do
-        expect(helper.ix_image_tag("image.jpg", { alt: "No Church in the Wild", w: 400, h: 300 })).to eq "<img alt=\"No Church in the Wild\" src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&h=300&w=400\" />"
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", alt: "No Church in the Wild", w: 400, h: 300)).children[0]
+        expect(tag.attribute('alt').value).to eq('No Church in the Wild')
       end
 
       it 'applies the client-hints parameter' do
-        expect(helper.ix_image_tag("image.jpg", ch: "Width,DPR")).to eq  "<img src=\"https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR\" alt=\"Image.jpg?ixlib=rails #{truncated_version}\" />"
-      end
-    end
-
-    describe '#ix_responsive_image_tag' do
-      let(:app) { Class.new(::Rails::Application) }
-      let(:source) { "assets.imgix.net" }
-      let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
-
-      before do
-        Imgix::Rails.configure { |config| config.imgix = { source: source } }
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", ch: "Width,DPR")).children[0]
+        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR")
       end
 
-      it 'generates the expected number of srcset values' do
-        tag = Nokogiri::XML(helper.ix_responsive_image_tag("image.jpg")).root
-        expect(tag.attribute('srcset').value.split(',').size).to eq(117)
-      end
+      describe 'srcset' do
+        let(:app) { Class.new(::Rails::Application) }
+        let(:source) { "assets.imgix.net" }
+        let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
 
-      context "with sizes" do
-        let(:sizes_value) { "(min-width: 800px) 800px, 100vw" }
-        let(:tag) do
-          Nokogiri::XML(helper.ix_responsive_image_tag("image.jpg", sizes: sizes_value)).root
+        before do
+          Imgix::Rails.configure { |config| config.imgix = { source: source } }
         end
 
         it 'generates the expected number of srcset values' do
-          expect(tag.attribute('srcset').value.split(',').size).to eq(20)
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
+          expect(tag.attribute('srcset').value.split(',').size).to eq(73)
         end
 
-        it 'carries the sizes value through to the HTML' do
-          expect(tag.attribute('sizes').value).to eq(sizes_value)
-        end
-      end
+        context 'with min_width' do
+          let(:tag) do
+            Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", min_width: 2560)).children[0]
+          end
 
-      it 'replaces the hostname' do
-        Imgix::Rails.configure do |config|
-          config.imgix = {
-            source: source,
-            hostnames_to_replace: [another_hostname]
-          }
+          it 'generates the expected number of srcset values' do
+            expect(tag.attribute('srcset').value.split(',').size).to eq(29)
+          end
         end
 
-        tag = Nokogiri::XML(helper.ix_responsive_image_tag("https://#{another_hostname}/image.jpg")).root
-        expect(tag.attribute('srcset').value).not_to include(another_hostname)
+        context 'with max_width' do
+          let(:tag) do
+            Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", max_width: 100)).children[0]
+          end
+
+          it 'generates the expected number of srcset values' do
+            expect(tag.attribute('srcset').value.split(',').size).to eq(1)
+          end
+        end
+
+        it 'replaces the hostname' do
+          Imgix::Rails.configure do |config|
+            config.imgix = {
+              source: source,
+              hostnames_to_replace: [another_hostname]
+            }
+          end
+
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://#{another_hostname}/image.jpg")).children[0]
+          expect(tag.attribute('srcset').value).not_to include(another_hostname)
+        end
       end
     end
 
     describe '#ix_picture_tag' do
       it 'generates a picture tag' do
-        tag = Nokogiri::XML(helper.ix_picture_tag("image.jpg")).root
+        tag = Nokogiri::HTML.fragment(helper.ix_picture_tag("image.jpg")).children[0]
         expect(tag.name).to eq('picture')
         expect(tag.children.size).to eq(2)
       end
