@@ -198,6 +198,19 @@ describe Imgix::Rails do
         expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR")
       end
 
+      describe 'sizes' do
+        it 'sets a default value of 100vw if not specified' do
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg')).children[0]
+          expect(tag.attribute('sizes').value).to eq('100vw')
+        end
+
+        it 'does not override an explicit `sizes` value' do
+          sizes_value = 'calc(100vw - 20px - 50%)'
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', sizes: sizes_value)).children[0]
+          expect(tag.attribute('sizes').value).to eq(sizes_value)
+        end
+      end
+
       describe 'srcset' do
         let(:app) { Class.new(::Rails::Application) }
         let(:source) { "assets.imgix.net" }
