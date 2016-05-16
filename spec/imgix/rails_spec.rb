@@ -225,6 +225,18 @@ describe Imgix::Rails do
           expect(tag.attribute('srcset').value.split(',').size).to eq(73)
         end
 
+        it 'correctly calculates `h` to maintain aspect ratio, when specified' do
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('presskit/imgix-presskit.pdf', page: 3, w: 600, h: 300)).children[0]
+
+
+          tag.attribute('srcset').value.split(',').each do |srcsetPair|
+            w = srcsetPair.match(/w=(\d+)/)[1].to_i
+            h = srcsetPair.match(/h=(\d+)/)[1].to_i
+
+            expect((w / 2.0).round).to eq(h)
+          end
+        end
+
         context 'with min_width' do
           let(:tag) do
             Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", min_width: 2560)).children[0]

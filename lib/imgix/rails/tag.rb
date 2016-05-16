@@ -29,10 +29,15 @@ protected
 
   def srcset
     @source = replace_hostname(@source)
-    target_widths.map do |w|
+    target_widths.map do |target_width|
       srcset_options = @options.slice(*self.class.available_parameters)
-      srcset_options[:w] = w
-      "#{ix_image_url(@source, srcset_options)} #{w}w"
+      srcset_options[:w] = target_width
+
+      if @options[:w].present? && @options[:h].present?
+        srcset_options[:h] = (target_width * (@options[:h].to_f / @options[:w])).round
+      end
+
+      "#{ix_image_url(@source, srcset_options)} #{target_width}w"
     end.join(', ')
   end
 
