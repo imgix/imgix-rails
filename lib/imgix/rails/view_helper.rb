@@ -11,8 +11,8 @@ module Imgix
         Imgix::Rails::ImageTag.new(source, options).render
       end
 
-      def ix_picture_tag(source, options={})
-        Imgix::Rails::PictureTag.new(source, options).render
+      def ix_picture_tag(source, picture_tag_options:, imgix_default_options:, breakpoints:)
+        Imgix::Rails::PictureTag.new(source, picture_tag_options, imgix_default_options, breakpoints).render
       end
     end
   end

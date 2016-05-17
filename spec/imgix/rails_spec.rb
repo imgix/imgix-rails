@@ -222,7 +222,7 @@ describe Imgix::Rails do
 
         it 'generates the expected number of srcset values' do
           tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
-          expect(tag.attribute('srcset').value.split(',').size).to eq(73)
+          expect(tag.attribute('srcset').value.split(',').size).to eq(71)
         end
 
         it 'correctly calculates `h` to maintain aspect ratio, when specified' do
@@ -272,10 +272,77 @@ describe Imgix::Rails do
     end
 
     describe '#ix_picture_tag' do
-      it 'generates a picture tag' do
-        tag = Nokogiri::HTML.fragment(helper.ix_picture_tag("image.jpg")).children[0]
+      let(:tag) do
+        picture_tag = helper.ix_picture_tag(
+          'bertandernie.jpg',
+          picture_tag_options: {
+            class: 'a-picture-tag'
+          },
+          imgix_default_options: {
+            w: 300,
+            h: 300,
+            fit: 'crop',
+          },
+          breakpoints: {
+            '(max-width: 640px)': {
+              h: 100,
+              sizes: 'calc(100vw - 20px)'
+            },
+            '(max-width: 880px)': {
+              crop: 'right',
+              sizes: 'calc(100vw - 20px - 50%)'
+            },
+            '(min-width: 881px)': {
+              crop: 'left',
+              sizes: '430px'
+            }
+          }
+        )
+
+        Nokogiri::HTML.fragment(picture_tag).children[0]
+      end
+
+      it 'generates a `picture`' do
         expect(tag.name).to eq('picture')
-        expect(tag.children.size).to eq(2)
+      end
+
+      it 'passes through options to the `picture`' do
+        expect(tag.attribute('class').value).to eq('a-picture-tag')
+      end
+
+      it 'generates the specified number of `source` children' do
+        expect(tag.css('source').length).to eq(3)
+      end
+
+      it 'generates a fallback `img` child' do
+        expect(tag.css('img').length).to eq(1)
+      end
+
+      it 'sets the specified `media` on each `source`' do
+        expected_media = [
+          '(max-width: 640px)',
+          '(max-width: 880px)',
+          '(min-width: 881px)'
+        ]
+
+        tag.css('source').each_with_index do |source, i|
+          expect(source.attribute('media').value).to eq(expected_media[i])
+        end
+      end
+
+      it 'sets the specified `sizes` on each `source`' do
+        expected_sizes = [
+          'calc(100vw - 20px)',
+          'calc(100vw - 20px - 50%)',
+          '430px'
+        ]
+
+        puts 'wat'
+        puts tag.to_s
+
+        tag.css('source').each_with_index do |source, i|
+          expect(source.attribute('sizes').value).to eq(expected_sizes[i])
+        end
       end
     end
   end

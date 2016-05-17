@@ -27,14 +27,14 @@ class Imgix::Rails::Tag
 
 protected
 
-  def srcset
+  def srcset(opts=@options)
     @source = replace_hostname(@source)
     target_widths.map do |target_width|
-      srcset_options = @options.slice(*self.class.available_parameters)
+      srcset_options = opts.slice(*self.class.available_parameters)
       srcset_options[:w] = target_width
 
-      if @options[:w].present? && @options[:h].present?
-        srcset_options[:h] = (target_width * (@options[:h].to_f / @options[:w])).round
+      if opts[:w].present? && opts[:h].present?
+        srcset_options[:h] = (target_width * (opts[:h].to_f / opts[:w])).round
       end
 
       "#{ix_image_url(@source, srcset_options)} #{target_width}w"
@@ -91,7 +91,7 @@ private
       BOOTSTRAP_XL
     ]
 
-    breaks + breaks.map{ |b| b[:dpr] = 2; b }
+    breaks + breaks.map { |b| b[:dpr] = 2; b }
   end
 
   def phones
@@ -144,7 +144,7 @@ private
 
   def device_widths
     devices.map do |device|
-      device[:css_width] * device[:dpr]
+      (device[:css_width] * device[:dpr]).round
     end
   end
 
