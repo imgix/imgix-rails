@@ -337,9 +337,6 @@ describe Imgix::Rails do
           '430px'
         ]
 
-        puts 'wat'
-        puts tag.to_s
-
         tag.css('source').each_with_index do |source, i|
           expect(source.attribute('sizes').value).to eq(expected_sizes[i])
         end

@@ -109,25 +109,42 @@ Then rendering the portrait in your application is very easy:
 <a name="ix_picture_tag"></a>
 ### ix_picture_tag
 
-The `ix_picture_tag` helper method makes it easy to generate `<picture>` elements in your Rails app.
+The `ix_picture_tag` helper method makes it easy to generate `picture` elements in your Rails app. `picture` elements are useful when an images needs to be art directed differently at different screen sizes.
 
-The `ix_picture_tag` method will generate a `<picture>` element with a single `<source>` element and a fallback `<img>` element. We are open for new directions to take this in.
+`ix_picture_tag` takes four arguments:
 
-It will use the configured device-pixel-ratios in the `config.imgix[:responsive_resolutions]` value. It will default to `[1, 2]`.
+* `source`: The path or URL of the image to display.
+* `picture_tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
+* `imgix_default_options`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
+* `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of param overrides for that media query. A `source` element will be generated for each breakpoint specified.
 
 ```erb
-<%= ix_picture_tag('/users/1/avatar.png', { w: 400, h: 300 }) %>
+<%= ix_picture_tag('bertandernie.jpg',
+  picture_tag_options: {
+    class: 'a-picture-tag'
+  },
+  imgix_default_options: {
+    w: 300,
+    h: 300,
+    fit: 'crop',
+  },
+  breakpoints: {
+    '(max-width: 640px)': {
+      h: 100,
+      sizes: 'calc(100vw - 20px)'
+    },
+    '(max-width: 880px)': {
+      crop: 'right',
+      sizes: 'calc(100vw - 20px - 50%)'
+    },
+    '(min-width: 881px)': {
+      crop: 'left',
+      sizes: '430px'
+    }
+  }
+) %>
 ```
 
-Will generate the following HTML:
-
-```html
-<picture>
-  <source srcset="https://assets.imgix.net/users/1/avatar.png?w=400&h=300 1x,
-                  https://assets.imgix.net/users/1/avatar.png?w=400&h=300&dpr=2 2x" />
-  <img src="https://assets.imgix.net/users/1/avatar.png?w=400&h=300" />
-</picture>
-```
 
 <a name="ix_image_url"></a>
 ### ix_image_url
