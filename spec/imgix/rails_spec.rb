@@ -284,15 +284,15 @@ describe Imgix::Rails do
             fit: 'crop',
           },
           breakpoints: {
-            '(max-width: 640px)': {
+            '(max-width: 640px)' => {
               h: 100,
               sizes: 'calc(100vw - 20px)'
             },
-            '(max-width: 880px)': {
+            '(max-width: 880px)' => {
               crop: 'right',
               sizes: 'calc(100vw - 20px - 50%)'
             },
-            '(min-width: 881px)': {
+            '(min-width: 881px)' => {
               crop: 'left',
               sizes: '430px'
             }
