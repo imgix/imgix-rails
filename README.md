@@ -12,7 +12,6 @@ We recommend using something like [Paperclip](https://github.com/thoughtbot/pape
 * [Usage](#usage)
   * [Configuration](#configuration)
   * [ix_image_tag](#ix_image_tag)
-  * [ix_responsive_image_tag](#ix_responsive_image_tag)
   * [ix_picture_tag](#ix_picture_tag)
   * [ix_image_url](#ix_image_url)
   * [Hostname Removal](#hostname-removal)
@@ -65,16 +64,28 @@ The following configuration flags will be respected:
 <a name="ix_image_tag"></a>
 ### ix_image_tag
 
-The simplest way of working with imgix-rails is to use the `ix_image_tag`, this allows you to pass parameters to imgix to handle things like resizing, cropping, etc.
+The `ix_image_tag` helper method makes it easy to pass parameters to imgix to handle resizing, cropping, etc. It also simplifies adding responsive imagery to your Rails app by automatically generating a `srcset` based on the parameters you pass. We talk a bit about using the `srcset` attribute in an application in the following blog post: [“Responsive Images with `srcset` and imgix.”](http://blog.imgix.com/post/127012184664/responsive-images-with-srcset-imgix).
+
+`ix_image_tag` generates `<img>` tags with a filled-out `srcset` attribute that leans on imgix to do the hard work. If you already know the minimum or maximum number of physical pixels that this image will need to be displayed at, you can pass the `min_width` and/or `max_width` options. This will result in a smaller, more tailored `srcset`.
 
 ```erb
-<%= ix_image_tag('/path/to/image.jpg', { w: 400, h: 300 }) %>
+<%= ix_image_tag('/unsplash/hotairballoon.jpg', { w: 300, h: 500, fit: 'crop', crop: 'right', alt: 'A hot air balloon on a sunny day' }) %>
 ```
 
 Will render out HTML like the following:
 
 ```html
-<img src="https://assets.imgix.net/path/to/image?w=400&h=300" />
+<img
+  alt="A hot air balloon on a sunny day"
+  sizes="100vw"
+  srcset="
+    https://assets.imgix.net/unsplash/hotairballoon.jpg?w=100&amp;h=167&amp;fit=crop&amp;crop=right 100w,
+    https://assets.imgix.net/unsplash/hotairballoon.jpg?w=200&amp;h=333&amp;fit=crop&amp;crop=right 200w,
+    …
+    https://assets.imgix.net/unsplash/hotairballoon.jpg?w=2560&amp;h=4267&amp;fit=crop&amp;crop=right 2560w
+  "
+  src="https://assets.imgix.net/unsplash/hotairballoon.jpg?w=300&amp;h=500&amp;fit=crop&amp;crop=right"
+>
 ```
 
 We recommend leveraging this to generate powerful helpers within your application like the following:
@@ -91,51 +102,46 @@ Then rendering the portrait in your application is very easy:
 <%= profile_image_tag(@user) %>
 ```
 
-<a name="ix_responsive_image_tag"></a>
-### ix_responsive_image_tag
-
-The `ix_responsive_image_tag` helper method makes it easy to bring responsive imagery to your Rails app. We talk a bit about using the `srcset` attribute in an application in the following blog post: [“Responsive Images with `srcset` and imgix.”](http://blog.imgix.com/post/127012184664/responsive-images-with-srcset-imgix)
-
-The `ix_responsive_image_tag` will generate an `<img>` element with a filled-out `srcset` attribute that leans on imgix to do the hard work.
-
-It will use the configured device-pixel-ratios in the `config.imgix[:responsive_resolutions]` value. It will default to `[1, 2]`.
-
-```erb
-<%= ix_responsive_image_tag('/users/1/avatar.png', { w: 400, h: 300 }) %>
-```
-
-This will generate the following HTML:
-
-```html
-<img
-  srcset="https://assets.imgix.net/users/1/avatar.png?w=400&h=300 1x,
-          https://assets.imgix.net/users/1/avatar.png?w=400&h=300&dpr=2 2x"
-  src="https://assets.imgix.net/users/1/avatar.png?w=400&h=300"
-/>
-```
 
 <a name="ix_picture_tag"></a>
 ### ix_picture_tag
 
-The `ix_picture_tag` helper method makes it easy to generate `<picture>` elements in your Rails app.
+The `ix_picture_tag` helper method makes it easy to generate `picture` elements in your Rails app. `picture` elements are useful when an images needs to be art directed differently at different screen sizes.
 
-The `ix_picture_tag` method will generate a `<picture>` element with a single `<source>` element and a fallback `<img>` element. We are open for new directions to take this in.
+`ix_picture_tag` takes four arguments:
 
-It will use the configured device-pixel-ratios in the `config.imgix[:responsive_resolutions]` value. It will default to `[1, 2]`.
+* `source`: The path or URL of the image to display.
+* `picture_tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
+* `imgix_default_options`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
+* `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of param overrides for that media query. A `source` element will be generated for each breakpoint specified.
 
 ```erb
-<%= ix_picture_tag('/users/1/avatar.png', { w: 400, h: 300 }) %>
+<%= ix_picture_tag('bertandernie.jpg',
+  picture_tag_options: {
+    class: 'a-picture-tag'
+  },
+  imgix_default_options: {
+    w: 300,
+    h: 300,
+    fit: 'crop',
+  },
+  breakpoints: {
+    '(max-width: 640px)' => {
+      h: 100,
+      sizes: 'calc(100vw - 20px)'
+    },
+    '(max-width: 880px)' => {
+      crop: 'right',
+      sizes: 'calc(100vw - 20px - 50%)'
+    },
+    '(min-width: 881px)' => {
+      crop: 'left',
+      sizes: '430px'
+    }
+  }
+) %>
 ```
 
-Will generate the following HTML:
-
-```html
-<picture>
-  <source srcset="https://assets.imgix.net/users/1/avatar.png?w=400&h=300 1x,
-                  https://assets.imgix.net/users/1/avatar.png?w=400&h=300&dpr=2 2x" />
-  <img src="https://assets.imgix.net/users/1/avatar.png?w=400&h=300" />
-</picture>
-```
 
 <a name="ix_image_url"></a>
 ### ix_image_url
