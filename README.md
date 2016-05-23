@@ -69,16 +69,13 @@ The `ix_image_tag` helper method makes it easy to pass parameters to imgix to ha
 `ix_image_tag` generates `<img>` tags with a filled-out `srcset` attribute that leans on imgix to do the hard work. If you already know the minimum or maximum number of physical pixels that this image will need to be displayed at, you can pass the `min_width` and/or `max_width` options. This will result in a smaller, more tailored `srcset`.
 
 ```erb
-<%= ix_image_tag('/unsplash/hotairballoon.jpg', { w: 300, h: 500, alt: 'A hot air balloon on a sunny day' }) %>
+<%= ix_image_tag('/unsplash/hotairballoon.jpg', { w: 300, h: 500, fit: 'crop', crop: 'right', alt: 'A hot air balloon on a sunny day' }) %>
 ```
 
 Will render out HTML like the following:
 
 ```html
-<img src="https://assets.imgix.net/path/to/image?w=400&h=300" />
-
 <img
-  ix-src="https://assets.imgix.net/unsplash/hotairballoon.jpg?w=300&amp;h=500&amp;fit=crop&amp;crop=right"
   alt="A hot air balloon on a sunny day"
   sizes="100vw"
   srcset="
