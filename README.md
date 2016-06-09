@@ -102,6 +102,12 @@ Then rendering the portrait in your application is very easy:
 <%= profile_image_tag(@user) %>
 ```
 
+If you already know all the exact widths you need images for, you can specify that by passing the `widths` option as an array. In this case, imgix-rails will only generate `srcset` pairs for the specified `widths`.
+
+```erb
+<%= ix_image_tag('/unsplash/hotairballoon.jpg', { widths: [320, 640, 960, 1280] w: 300, h: 500, fit: 'crop', crop: 'right', alt: 'A hot air balloon on a sunny day' }) %>
+```
+
 
 <a name="ix_picture_tag"></a>
 ### ix_picture_tag

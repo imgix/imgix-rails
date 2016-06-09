@@ -193,6 +193,20 @@ describe Imgix::Rails do
         expect(tag.attribute('alt').value).to eq('No Church in the Wild')
       end
 
+      it 'adds exact 1x, 2x, and 3x multiples of the passed `w` to the generated `srcset`' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', w: 430)).children[0]
+        expect(tag.attribute('srcset').value).to include('430w')
+        expect(tag.attribute('srcset').value).to include('860w')
+        expect(tag.attribute('srcset').value).to include('1290w')
+      end
+
+      it 'allows explicitly specifying desired widths' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], w: 400, h: 300)).children[0]
+        expect(tag.attribute('srcset').value).to include('10w')
+        expect(tag.attribute('srcset').value).to include('20w')
+        expect(tag.attribute('srcset').value).to include('30w')
+      end
+
       it 'applies the client-hints parameter' do
         tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", ch: "Width,DPR")).children[0]
         expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR")

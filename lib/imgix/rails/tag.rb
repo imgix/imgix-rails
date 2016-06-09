@@ -29,15 +29,17 @@ protected
 
   def srcset(opts=@options)
     @source = replace_hostname(@source)
-    target_widths.map do |target_width|
+    widths = opts[:widths] || target_widths
+
+    widths.map do |width|
       srcset_options = opts.slice(*self.class.available_parameters)
-      srcset_options[:w] = target_width
+      srcset_options[:w] = width
 
       if opts[:w].present? && opts[:h].present?
-        srcset_options[:h] = (target_width * (opts[:h].to_f / opts[:w])).round
+        srcset_options[:h] = (width * (opts[:h].to_f / opts[:w])).round
       end
 
-      "#{ix_image_url(@source, srcset_options)} #{target_width}w"
+      "#{ix_image_url(@source, srcset_options)} #{width}w"
     end.join(', ')
   end
 
@@ -137,9 +139,16 @@ private
     min_screen_width_required = @options[:min_width] || SCREEN_STEP
     max_screen_width_required = @options[:max_width] || MAXIMUM_SCREEN_WIDTH
 
-    (device_widths + screen_widths).select do |w|
+    widths = (device_widths + screen_widths).select do |w|
       w <= max_screen_width_required && w >= min_screen_width_required
     end.compact.uniq.sort
+
+    # Add exact widths for 1x, 2x, and 3x devices
+    if @options[:w]
+      widths.push(@options[:w], @options[:w] * 2, @options[:w] * 3)
+    end
+
+    widths
   end
 
   def device_widths
