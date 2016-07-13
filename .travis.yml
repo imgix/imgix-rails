@@ -4,7 +4,6 @@ before_install:
 rvm:
   - 2.3.0
   - 2.2.4
-  - 2.1.11
   - jruby-9.0.5.0
-  - rbx-3.46
+  - rbx-3.34
 script: bundle exec rspec
