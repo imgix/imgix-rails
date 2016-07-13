@@ -17,7 +17,10 @@ class Imgix::Rails::Tag
     return @@parameters if @@parameters
 
     path = File.expand_path("../../../../vendor/parameters.json", __FILE__)
-    @@parameters ||= JSON.parse(File.read(path), symbolize_names: true)[:parameters]
+    @@parameters = JSON.parse(File.read(path), symbolize_names: true)[:parameters]
+    @@parameters[:widths] = nil
+
+    @@parameters
   end
 
   def initialize(source, options={})
