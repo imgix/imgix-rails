@@ -8,7 +8,7 @@ module Imgix
 
         source = replace_hostname(source)
 
-        client.path(source).to_url(options).html_safe
+        imgix_client.path(source).to_url(options).html_safe
       end
 
       private
@@ -41,7 +41,7 @@ module Imgix
         Array(::Imgix::Rails.config.imgix[:hostname_to_replace] || ::Imgix::Rails.config.imgix[:hostnames_to_replace])
       end
 
-      def client
+      def imgix_client
         return @imgix_client if @imgix_client
         imgix = ::Imgix::Rails.config.imgix
 
