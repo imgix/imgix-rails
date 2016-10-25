@@ -1,6 +1,7 @@
 require "rails"
 require "rails/railtie"
 require "imgix/rails"
+require "imgix/rails/url_helper"
 require "imgix/rails/view_helper"
 
 module Imgix
@@ -14,6 +15,10 @@ module Imgix
         end
 
         ActionView::Base.send :include, ViewHelper
+
+        if defined? Sprockets
+          Sprockets::Context.send :include, UrlHelper
+        end
       end
     end
   end
