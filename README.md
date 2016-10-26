@@ -177,7 +177,7 @@ puts ix_image_url('/users/1/avatar.png', { w: 400, h: 300 })
 <a name="usage-in-sprockets"></a>
 #### Usage in Sprockets
 
-`ix_image_url` is also pulled in as a Sprockets helper, so you can generate imgix URLs in your `.scss.erb` files.
+`ix_image_url` is also pulled in as a Sprockets helper, so you can generate imgix URLs in your asset pipline files. For example, here's how it would work inside an `.scss.erb` file:
 
 ```scss
 .something {
