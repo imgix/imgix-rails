@@ -181,7 +181,7 @@ puts ix_image_url('/users/1/avatar.png', { w: 400, h: 300 })
 
 ```scss
 .something {
-  background-image: url(ix_image_url('a-background.png', { w: 400, h: 300 }));
+  background-image: url(<%= ix_image_url('a-background.png', { w: 400, h: 300 }) %>);
 }
 ```
 
