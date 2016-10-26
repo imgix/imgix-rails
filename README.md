@@ -14,6 +14,7 @@ We recommend using something like [Paperclip](https://github.com/thoughtbot/pape
   * [ix_image_tag](#ix_image_tag)
   * [ix_picture_tag](#ix_picture_tag)
   * [ix_image_url](#ix_image_url)
+    * [Usage in Sprockets](#usage-in-sprockets)
   * [Hostname Removal](#hostname-removal)
 * [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
   * [Paperclip and CarrierWave](#paperclip-and-carrierwave)
@@ -171,6 +172,17 @@ include Imgix::Rails::UrlHelper
 
 puts ix_image_url('/users/1/avatar.png', { w: 400, h: 300 })
 # => https://assets.imgix.net/users/1/avatar.png?w=400&h=300
+```
+
+<a name="usage-in-sprockets"></a>
+#### Usage in Sprockets
+
+`ix_image_url` is also pulled in as a Sprockets helper, so you can generate imgix URLs in your asset pipline files. For example, here's how it would work inside an `.scss.erb` file:
+
+```scss
+.something {
+  background-image: url(<%= ix_image_url('a-background.png', { w: 400, h: 300 }) %>);
+}
 ```
 
 ### Hostname Removal
