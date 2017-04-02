@@ -65,7 +65,7 @@ The following configuration flags will be respected:
 <a name="ix_image_tag"></a>
 ### ix_image_tag
 
-The `ix_image_tag` helper method makes it easy to pass parameters to imgix to handle resizing, cropping, etc. It also simplifies adding responsive imagery to your Rails app by automatically generating a `srcset` based on the parameters you pass. We talk a bit about using the `srcset` attribute in an application in the following blog post: [“Responsive Images with `srcset` and imgix.”](http://blog.imgix.com/post/127012184664/responsive-images-with-srcset-imgix).
+The `ix_image_tag` helper method makes it easy to pass parameters to imgix to handle resizing, cropping, etc. It also simplifies adding responsive imagery to your Rails app by automatically generating a `srcset` based on the parameters you pass. We talk a bit about using the `srcset` attribute in an application in the following blog post: [“Responsive Images with `srcset` and imgix.”](https://blog.imgix.com/2015/08/18/responsive-images-with-srcset-imgix.html).
 
 `ix_image_tag` generates `<img>` tags with a filled-out `srcset` attribute that leans on imgix to do the hard work. If you already know the minimum or maximum number of physical pixels that this image will need to be displayed at, you can pass the `min_width` and/or `max_width` options. This will result in a smaller, more tailored `srcset`.
 
