@@ -8,6 +8,6 @@ class Imgix::Rails::ImageTag < Imgix::Rails::Tag
     @source = replace_hostname(@source)
     normal_opts = @options.slice!(*self.class.available_parameters)
 
-    image_tag(ix_image_url(@source, @options), normal_opts)
+    image_tag(ix_image_url(@source, @options.except(:widths)), normal_opts)
   end
 end

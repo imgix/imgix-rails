@@ -212,6 +212,16 @@ describe Imgix::Rails do
         expect(tag.attribute('widths')).to be_nil
       end
 
+      it 'does not include `widths` as a query parameter in the generated `srcset`' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], w: 400, h: 300)).children[0]
+        expect(tag.attribute('srcset').value).not_to include('widths')
+      end
+
+      it 'does not include `widths` as a query parameter in the generated `src`' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], w: 400, h: 300)).children[0]
+        expect(tag.attribute('src').value).not_to include('widths')
+      end
+
       it 'applies the client-hints parameter' do
         tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", ch: "Width,DPR")).children[0]
         expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR")

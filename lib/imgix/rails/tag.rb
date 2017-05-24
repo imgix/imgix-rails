@@ -35,7 +35,7 @@ protected
     widths = opts[:widths] || target_widths
 
     widths.map do |width|
-      srcset_options = opts.slice(*self.class.available_parameters)
+      srcset_options = opts.slice(*self.class.available_parameters).except(:widths)
       srcset_options[:w] = width
 
       if opts[:w].present? && opts[:h].present?
