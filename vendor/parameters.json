@@ -911,6 +911,62 @@
 			"url": "https://www.imgix.com/docs/reference/mask#param-mask",
 			"short_description": "Specifies the location of the mask image."
 		},
+		"max-h": {
+			"display_name": "maximum height",
+			"category": "size",
+			"expects": [
+				{
+					"type": "number"
+				},
+				{
+					"type": "unit_scalar"
+				}
+			],
+			"url": "https://docs.imgix.com/apis/url/size/max-h",
+			"short_description": "The maximum allowed height of the output image."
+		},
+		"max-w": {
+			"display_name": "maximum width",
+			"category": "size",
+			"expects": [
+				{
+					"type": "number"
+				},
+				{
+					"type": "unit_scalar"
+				}
+			],
+			"url": "https://docs.imgix.com/apis/url/size/max-w",
+			"short_description": "The maximum allowed width of the output image."
+		},
+		"min-h": {
+			"display_name": "minimum height",
+			"category": "size",
+			"expects": [
+				{
+					"type": "number"
+				},
+				{
+					"type": "unit_scalar"
+				}
+			],
+			"url": "https://docs.imgix.com/apis/url/size/min-h",
+			"short_description": "The minimum allowed height of the output image."
+		},
+		"min-w": {
+			"display_name": "minimum width",
+			"category": "size",
+			"expects": [
+				{
+					"type": "number"
+				},
+				{
+					"type": "unit_scalar"
+				}
+			],
+			"url": "https://docs.imgix.com/apis/url/size/min-w",
+			"short_description": "The minimum allowed width of the output image."
+		},
 		"mono": {
 			"display_name": "monochrome",
 			"category": "stylize",
