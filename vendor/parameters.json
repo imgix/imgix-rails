@@ -385,7 +385,8 @@
 						"bottom",
 						"left",
 						"right",
-						"faces",
+            "faces",
+            "focalpoint",
 						"entropy"
 					]
 				}
@@ -572,6 +573,57 @@
 			],
 			"url": "https://www.imgix.com/docs/reference/format#param-fm",
 			"short_description": "Changes the format of the output image."
+    },
+    "fp-x": {
+			"display_name": "horizontal focalpoint",
+			"category": "size",
+			"expects": [
+				{
+					"type": "number"
+				},
+				{
+					"type": "unit_scalar"
+				}
+			],
+			"depends": [
+				"crop=focalpoint"
+			],
+			"url": "https://docs.imgix.com/apis/url/focalpoint-crop",
+			"short_description": "Specifies how to crop an image."
+		},
+    "fp-y": {
+			"display_name": "vertical focalpoint",
+			"category": "size",
+			"expects": [
+				{
+					"type": "number"
+				},
+				{
+					"type": "unit_scalar"
+				}
+			],
+			"depends": [
+				"crop=focalpoint"
+			],
+			"url": "https://docs.imgix.com/apis/url/focalpoint-crop",
+			"short_description": "Specifies how to crop an image."
+		},
+    "fp-z": {
+			"display_name": "focalpoint zoom",
+			"category": "size",
+			"expects": [
+				{
+					"type": "number"
+				},
+				{
+					"type": "unit_scalar"
+				}
+			],
+			"depends": [
+				"crop=focalpoint"
+			],
+			"url": "https://docs.imgix.com/apis/url/focalpoint-crop",
+			"short_description": "Specifies how to crop an image."
 		},
 		"gam": {
 			"display_name": "gamma",
