@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Imgix::Rails::VERSION
   spec.authors       = ["Kelly Sutton", "Paul Straw"]
   spec.email         = ["kelly@imgix.com", "ixemail"]
-  spec.licenses      = ["MIT"]
+  spec.licenses      = ["BSD-2-Clause"]
 
   spec.summary       = %q{Makes integrating imgix into your Rails app easier. It builds on imgix-rb to offer a few Rails-specific interfaces.}
   spec.description   = %q{Makes integrating imgix into your Rails app easier. It builds on imgix-rb to offer a few Rails-specific interfaces. Please see https://github.com/imgix/imgix-rails for more details.}
