@@ -61,6 +61,7 @@ The following configuration flags will be respected:
 - `:source` a String or Array that specifies the imgix Source address. Should be in the form of `"assets.imgix.net"`.
 - `:secure_url_token` a optional secure URL token found in your dashboard (https://webapp.imgix.com) used for signing requests
 - `:hostnames_to_replace` an Array of hostnames to replace with the value(s) specified by `:source`. This is useful if you store full-qualified S3 URLs in your database, but want to serve images through imgix.
+- `shard_strategy`: Specify [domain sharding strategy](https://github.com/imgix/imgix-rb#domain-sharded-urls) with multiple sources. Acceptable values are `:cycle` and `:crc`. `:crc` is used by default.
 
 <a name="ix_image_tag"></a>
 ### ix_image_tag
@@ -121,7 +122,6 @@ The `ix_picture_tag` helper method makes it easy to generate `picture` elements 
 * `picture_tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
 * `imgix_default_options`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
 * `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of param overrides for that media query. A `source` element will be generated for each breakpoint specified.
-
 ```erb
 <%= ix_picture_tag('bertandernie.jpg',
   picture_tag_options: {

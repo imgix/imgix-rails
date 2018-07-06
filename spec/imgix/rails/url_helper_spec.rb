@@ -119,5 +119,46 @@ describe Imgix::Rails::UrlHelper do
         expect(url_helper.ix_image_url("https://#{yet_another_hostname}/image.jpg", w: 400, h: 300)).to eq "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&w=400&h=300"
       end
     end
+
+    describe 'optionally expects shard_strategy' do
+      it 'optionally expects crc shard_strategy' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: 'assets.imgix.net',
+            shard_strategy: :crc
+          }
+        end
+
+        expect{
+          url_helper.ix_image_url("assets.png")
+        }.not_to raise_error
+      end
+
+      it 'optionally expects cycle shard_strategy' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: 'assets.imgix.net',
+            shard_strategy: :cycle
+          }
+        end
+
+        expect{
+          url_helper.ix_image_url("assets.png")
+        }.not_to raise_error
+      end
+    end
+
+    it 'expects shard_strategy to be :crc or :cycle' do
+      Imgix::Rails.configure do |config|
+        config.imgix = {
+          source: 'assets.imgix.net',
+          shard_strategy: :foo
+        }
+      end
+
+      expect{
+        url_helper.ix_image_url("assets.png")
+      }.to raise_error(Imgix::Rails::ConfigurationError, "foo is not supported")
+    end
   end
 end
