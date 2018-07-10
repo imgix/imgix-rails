@@ -4,25 +4,12 @@ module Imgix
 
     module UrlHelper
       def ix_image_url(source, options={})
-        validate_configuration!
-
         source = replace_hostname(source)
 
-        imgix_client.path(source).to_url(options).html_safe
+        imgix_client(options[:host]).path(source).to_url(options.except(:host)).html_safe
       end
 
       private
-
-      def validate_configuration!
-        imgix = ::Imgix::Rails.config.imgix
-        unless imgix.try(:[], :source)
-          raise ConfigurationError.new("imgix source is not configured. Please set config.imgix[:source].")
-        end
-
-        unless imgix[:source].is_a?(Array) || imgix[:source].is_a?(String)
-          raise ConfigurationError.new("imgix source must be a String or an Array.")
-        end
-      end
 
       def replace_hostname(source)
         new_source = source.dup
@@ -41,12 +28,12 @@ module Imgix
         Array(::Imgix::Rails.config.imgix[:hostname_to_replace] || ::Imgix::Rails.config.imgix[:hostnames_to_replace])
       end
 
-      def imgix_client
+      def imgix_client(host)
         return @imgix_client if @imgix_client
         imgix = ::Imgix::Rails.config.imgix
 
         opts = {
-          host: imgix[:source],
+          host: host,
           library_param: "rails",
           library_version: Imgix::Rails::VERSION,
           use_https: true,
