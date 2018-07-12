@@ -8,6 +8,7 @@ require "active_support"
 
 module Imgix
   module Rails
+    STRATEGIES = [:crc, :cycle]
     class Config < ::ActiveSupport::OrderedOptions; end
 
     def self.config

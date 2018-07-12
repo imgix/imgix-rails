@@ -22,6 +22,10 @@ module Imgix
         unless imgix[:source].is_a?(Array) || imgix[:source].is_a?(String)
           raise ConfigurationError.new("imgix source must be a String or an Array.")
         end
+
+        unless !imgix.key?(:shard_strategy) || STRATEGIES.include?(imgix[:shard_strategy])
+          raise ConfigurationError.new("#{imgix[:shard_strategy]} is not supported")
+        end
       end
 
       def replace_hostname(source)
@@ -59,6 +63,10 @@ module Imgix
 
         if imgix.has_key?(:use_https)
           opts[:use_https] = imgix[:use_https]
+        end
+
+        if imgix.has_key?(:shard_strategy)
+          opts[:shard_strategy] = imgix[:shard_strategy]
         end
 
         @imgix_client = ::Imgix::Client.new(opts)
