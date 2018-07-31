@@ -23,26 +23,28 @@ class Imgix::Rails::Tag
     @@parameters
   end
 
-  def initialize(source, options={})
+  def initialize(source, tag_options: {}, url_params: {}, widths: [])
     @source = source
-    @options = options
+    @tag_options = tag_options
+    @url_params = url_params
+    @widths = widths.length > 0 ? widths : target_widths
   end
 
 protected
 
-  def srcset(opts=@options)
+  def srcset(url_params: @url_params, widths: @widths)
     @source = replace_hostname(@source)
-    widths = opts[:widths] || target_widths
+    widths = widths || target_widths
 
     widths.map do |width|
-      srcset_options = opts.slice(*self.class.available_parameters).except(:widths)
-      srcset_options[:w] = width
+      srcset_url_params = url_params.clone
+      srcset_url_params[:w] = width
 
-      if opts[:w].present? && opts[:h].present?
-        srcset_options[:h] = (width * (opts[:h].to_f / opts[:w])).round
+      if url_params[:w].present? && url_params[:h].present?
+        srcset_url_params[:h] = (width * (url_params[:h].to_f / url_params[:w])).round
       end
 
-      "#{ix_image_url(@source, srcset_options)} #{width}w"
+      "#{ix_image_url(@source, srcset_url_params)} #{width}w"
     end.join(', ')
   end
 
@@ -139,16 +141,16 @@ private
   #
   # @return {Array} An array of {Fixnum} instances representing the unique `srcset` URLs to generate.
   def target_widths
-    min_screen_width_required = @options[:min_width] || SCREEN_STEP
-    max_screen_width_required = @options[:max_width] || MAXIMUM_SCREEN_WIDTH
+    min_screen_width_required = @tag_options[:min_width] || SCREEN_STEP
+    max_screen_width_required = @tag_options[:max_width] || MAXIMUM_SCREEN_WIDTH
 
     widths = (device_widths + screen_widths).select do |w|
       w <= max_screen_width_required && w >= min_screen_width_required
     end.compact.uniq.sort
 
     # Add exact widths for 1x, 2x, and 3x devices
-    if @options[:w]
-      widths.push(@options[:w], @options[:w] * 2, @options[:w] * 3)
+    if @url_params[:w]
+      widths.push(@url_params[:w], @url_params[:w] * 2, @url_params[:w] * 3)
     end
 
     widths
