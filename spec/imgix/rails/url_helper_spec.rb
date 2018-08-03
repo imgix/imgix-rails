@@ -1,4 +1,3 @@
-require 'imgix/rails_spec'
 require 'imgix/rails/url_helper'
 
 describe Imgix::Rails::UrlHelper do

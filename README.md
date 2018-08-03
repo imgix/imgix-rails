@@ -71,7 +71,7 @@ The `ix_image_tag` helper method makes it easy to pass parameters to imgix to ha
 `ix_image_tag` generates `<img>` tags with a filled-out `srcset` attribute that leans on imgix to do the hard work. If you already know the minimum or maximum number of physical pixels that this image will need to be displayed at, you can pass the `min_width` and/or `max_width` options. This will result in a smaller, more tailored `srcset`.
 
 ```erb
-<%= ix_image_tag('/unsplash/hotairballoon.jpg', { w: 300, h: 500, fit: 'crop', crop: 'right', alt: 'A hot air balloon on a sunny day' }) %>
+<%= ix_image_tag('/unsplash/hotairballoon.jpg', url_params: { w: 300, h: 500, fit: 'crop', crop: 'right'}, tag_options: { alt: 'A hot air balloon on a sunny day' }) %>
 ```
 
 Will render out HTML like the following:
@@ -94,7 +94,7 @@ We recommend leveraging this to generate powerful helpers within your applicatio
 
 ```ruby
 def profile_image_tag(user)
-  ix_image_tag(user.profile_image_url, { w: 100, h: 200, fit: 'crop' })
+  ix_image_tag(user.profile_image_url, url_params: { w: 100, h: 200, fit: 'crop' })
 end
 ```
 
@@ -107,7 +107,7 @@ Then rendering the portrait in your application is very easy:
 If you already know all the exact widths you need images for, you can specify that by passing the `widths` option as an array. In this case, imgix-rails will only generate `srcset` pairs for the specified `widths`.
 
 ```erb
-<%= ix_image_tag('/unsplash/hotairballoon.jpg', { widths: [320, 640, 960, 1280], w: 300, h: 500, fit: 'crop', crop: 'right', alt: 'A hot air balloon on a sunny day' }) %>
+<%= ix_image_tag('/unsplash/hotairballoon.jpg', widths: [320, 640, 960, 1280], url_params: { w: 300, h: 500, fit: 'crop', crop: 'right'}, tag_options: { alt: 'A hot air balloon on a sunny day' }) %>
 ```
 
 
@@ -119,31 +119,45 @@ The `ix_picture_tag` helper method makes it easy to generate `picture` elements 
 `ix_picture_tag` takes four arguments:
 
 * `source`: The path or URL of the image to display.
-* `picture_tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
-* `imgix_default_options`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
+* `tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
+* `url_params`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
 * `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of param overrides for that media query. A `source` element will be generated for each breakpoint specified.
+* (deprecated) `picture_tag_options`: Use `tag_options` instead.
+* (deprecated) `imgix_default_options`: Use `url_params` instead.
 ```erb
 <%= ix_picture_tag('bertandernie.jpg',
-  picture_tag_options: {
+  tag_options: {
     class: 'a-picture-tag'
   },
-  imgix_default_options: {
+  url_params: {
     w: 300,
     h: 300,
     fit: 'crop',
   },
   breakpoints: {
     '(max-width: 640px)' => {
-      h: 100,
-      sizes: 'calc(100vw - 20px)'
+      url_params: {
+        h: 100,
+      },
+      tag_options: {
+        sizes: 'calc(100vw - 20px)'
+      }
     },
     '(max-width: 880px)' => {
-      crop: 'right',
-      sizes: 'calc(100vw - 20px - 50%)'
+      url_params: {
+        crop: 'right',
+      },
+      tag_options: {
+        sizes: 'calc(100vw - 20px - 50%)'
+      }
     },
     '(min-width: 881px)' => {
-      crop: 'left',
-      sizes: '430px'
+      url_params: {
+        crop: 'left',
+      },
+      tag_options: {
+        sizes: '430px'
+      }
     }
   }
 ) %>
@@ -283,3 +297,6 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## Code of Conduct
+Users contributing to or participating in the development of this project are subject to the terms of imgix's [Code of Conduct](https://github.com/imgix/code-of-conduct).
