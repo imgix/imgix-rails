@@ -302,125 +302,91 @@ describe Imgix::Rails do
     end
 
     describe '#ix_picture_tag' do
-      describe '#ix_picture_tag using :picture_tag_options and :imgix_default_options' do
-        let(:tag) do
-          ActiveSupport::Deprecation.silence do
-            picture_tag = helper.ix_picture_tag(
-              'bertandernie.jpg',
-              picture_tag_options: {
-                class: 'a-picture-tag'
+      let(:tag) do
+        picture_tag = helper.ix_picture_tag(
+          'bertandernie.jpg',
+          tag_options: {
+            class: 'a-picture-tag'
+          },
+          url_params: {
+            w: 300,
+            h: 300,
+            fit: 'crop',
+          },
+          breakpoints: {
+            '(max-width: 640px)' => {
+              tag_options: {
+                sizes: 'calc(100vw - 20px)'
               },
-              imgix_default_options: {
-                w: 300,
-                h: 300,
-                fit: 'crop',
-              },
-              breakpoints: {
-                '(max-width: 640px)' => {
-                  tag_options: {
-                    sizes: 'calc(100vw - 20px)'
-                  },
-                  url_params: {
-                    h: 100,
-                  }
-                },
-                '(max-width: 880px)' => {
-                  url_params: {
-                    crop: 'right'
-                  },
-                  tag_options: {
-                    sizes: 'calc(100vw - 20px - 50%)'
-                  }
-                },
-                '(min-width: 881px)' => {
-                  url_params: {
-                    crop: 'left',
-                  },
-                  tag_options: {
-                    sizes: '430px'
-                  }
-                }
+              url_params: {
+                h: 100,
               }
-            )
+            },
+            '(max-width: 880px)' => {
+              url_params: {
+                crop: 'right'
+              },
+              tag_options: {
+                sizes: 'calc(100vw - 20px - 50%)'
+              }
+            },
+            '(min-width: 881px)' => {
+              url_params: {
+                crop: 'left',
+              },
+              tag_options: {
+                sizes: '430px'
+              }
+            }
+          }
+        )
 
-            Nokogiri::HTML.fragment(picture_tag).children[0]
-          end
-        end
+        Nokogiri::HTML.fragment(picture_tag).children[0]
+      end
 
-        it 'generates a `picture`' do
-          expect(tag.name).to eq('picture')
-        end
+      it 'generates a `picture`' do
+        expect(tag.name).to eq('picture')
+      end
 
-        it 'passes through options to the `picture`' do
-          expect(tag.attribute('class').value).to eq('a-picture-tag')
-        end
+      it 'passes through options to the `picture`' do
+        expect(tag.attribute('class').value).to eq('a-picture-tag')
+      end
 
-        it 'generates the specified number of `source` children' do
-          expect(tag.css('source').length).to eq(3)
-        end
+      it 'generates the specified number of `source` children' do
+        expect(tag.css('source').length).to eq(3)
+      end
 
-        it 'generates a fallback `img` child' do
-          expect(tag.css('img').length).to eq(1)
-        end
+      it 'generates a fallback `img` child' do
+        expect(tag.css('img').length).to eq(1)
+      end
 
-        it 'sets the specified `media` on each `source`' do
-          expected_media = [
-            '(max-width: 640px)',
-            '(max-width: 880px)',
-            '(min-width: 881px)'
-          ]
+      it 'sets the specified `media` on each `source`' do
+        expected_media = [
+          '(max-width: 640px)',
+          '(max-width: 880px)',
+          '(min-width: 881px)'
+        ]
 
-          tag.css('source').each_with_index do |source, i|
-            expect(source.attribute('media').value).to eq(expected_media[i])
-          end
-        end
-
-        it 'sets the specified `sizes` on each `source`' do
-          expected_sizes = [
-            'calc(100vw - 20px)',
-            'calc(100vw - 20px - 50%)',
-            '430px'
-          ]
-
-          tag.css('source').each_with_index do |source, i|
-            expect(source.attribute('sizes').value).to eq(expected_sizes[i])
-          end
-        end
-
-        it 'throws error on unsupported options in breakpoints' do
-          expect{
-            ActiveSupport::Deprecation.silence do
-              helper.ix_picture_tag(
-                'bertandernie.jpg',
-                picture_tag_options: {
-                  class: 'a-picture-tag'
-                },
-                imgix_default_options: {
-                  w: 300,
-                  h: 300,
-                  fit: 'crop',
-                },
-                breakpoints: {
-                  '(max-width: 640px)' => {
-                    foo: 'foo',
-                    bar: 'bar',
-                    tag_options: {
-                      sizes: 'calc(100vw - 20px)'
-                    },
-                    url_params: {
-                      h: 100,
-                    }
-                  }
-                }
-              )
-            end
-          }.to raise_error(RuntimeError, /key\(s\) not supported/)
+        tag.css('source').each_with_index do |source, i|
+          expect(source.attribute('media').value).to eq(expected_media[i])
         end
       end
 
-      describe '#ix_picture_tag using :tag_options and :url_params' do
-        let(:tag) do
-          picture_tag = helper.ix_picture_tag(
+      it 'sets the specified `sizes` on each `source`' do
+        expected_sizes = [
+          'calc(100vw - 20px)',
+          'calc(100vw - 20px - 50%)',
+          '430px'
+        ]
+
+        tag.css('source').each_with_index do |source, i|
+          expect(source.attribute('sizes').value).to eq(expected_sizes[i])
+        end
+      end
+
+      it 'throws error on unsupported options in breakpoints' do
+        expect{
+          helper.ix_picture_tag(
             'bertandernie.jpg',
             tag_options: {
               class: 'a-picture-tag'
@@ -432,103 +398,20 @@ describe Imgix::Rails do
             },
             breakpoints: {
               '(max-width: 640px)' => {
+                foo: 'foo',
+                bar: 'bar',
                 tag_options: {
                   sizes: 'calc(100vw - 20px)'
                 },
                 url_params: {
                   h: 100,
                 }
-              },
-              '(max-width: 880px)' => {
-                url_params: {
-                  crop: 'right'
-                },
-                tag_options: {
-                  sizes: 'calc(100vw - 20px - 50%)'
-                }
-              },
-              '(min-width: 881px)' => {
-                url_params: {
-                  crop: 'left',
-                },
-                tag_options: {
-                  sizes: '430px'
-                }
               }
             }
           )
-
-          Nokogiri::HTML.fragment(picture_tag).children[0]
-        end
-
-        it 'generates a `picture`' do
-          expect(tag.name).to eq('picture')
-        end
-
-        it 'passes through options to the `picture`' do
-          expect(tag.attribute('class').value).to eq('a-picture-tag')
-        end
-
-        it 'generates the specified number of `source` children' do
-          expect(tag.css('source').length).to eq(3)
-        end
-
-        it 'generates a fallback `img` child' do
-          expect(tag.css('img').length).to eq(1)
-        end
-
-        it 'sets the specified `media` on each `source`' do
-          expected_media = [
-            '(max-width: 640px)',
-            '(max-width: 880px)',
-            '(min-width: 881px)'
-          ]
-
-          tag.css('source').each_with_index do |source, i|
-            expect(source.attribute('media').value).to eq(expected_media[i])
-          end
-        end
-
-        it 'sets the specified `sizes` on each `source`' do
-          expected_sizes = [
-            'calc(100vw - 20px)',
-            'calc(100vw - 20px - 50%)',
-            '430px'
-          ]
-
-          tag.css('source').each_with_index do |source, i|
-            expect(source.attribute('sizes').value).to eq(expected_sizes[i])
-          end
-        end
-
-        it 'throws error on unsupported options in breakpoints' do
-          expect{
-            helper.ix_picture_tag(
-              'bertandernie.jpg',
-              tag_options: {
-                class: 'a-picture-tag'
-              },
-              url_params: {
-                w: 300,
-                h: 300,
-                fit: 'crop',
-              },
-              breakpoints: {
-                '(max-width: 640px)' => {
-                  foo: 'foo',
-                  bar: 'bar',
-                  tag_options: {
-                    sizes: 'calc(100vw - 20px)'
-                  },
-                  url_params: {
-                    h: 100,
-                  }
-                }
-              }
-            )
-          }.to raise_error(RuntimeError, /key\(s\) not supported/)
-        end
+        }.to raise_error(RuntimeError, /key\(s\) not supported/)
       end
+
     end
   end
 end
