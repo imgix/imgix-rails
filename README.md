@@ -58,6 +58,7 @@ The following configuration flags will be respected:
 
 - `:use_https` toggles the use of HTTPS. Defaults to `true`
 - `:source` a String or Array that specifies the imgix Source address. Should be in the form of `"assets.imgix.net"`.
+- `:srcset_width_tolerance` an optional numeric value determining the maximum tolerance allowable, between the downloaded dimensions and rendered dimensions of the image (default `.08` i.e. `8%`).
 - `:secure_url_token` an optional secure URL token found in your dashboard (https://dashboard.imgix.com) used for signing requests
 - `:shard_strategy` Specify [domain sharding strategy](https://github.com/imgix/imgix-rb#domain-sharded-urls) with multiple sources. Acceptable values are `:cycle` and `:crc`. `:crc` is used by default.
 

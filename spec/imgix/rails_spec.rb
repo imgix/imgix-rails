@@ -152,13 +152,6 @@ describe Imgix::Rails do
         expect(tag.attribute('src').value).to include('foo=bar')
       end
 
-      it 'adds exact 1x, 2x, and 3x multiples of the passed `w` to the generated `srcset`' do
-        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', url_params: {w: 430})).children[0]
-        expect(tag.attribute('srcset').value).to include('430w')
-        expect(tag.attribute('srcset').value).to include('860w')
-        expect(tag.attribute('srcset').value).to include('1290w')
-      end
-
       it 'allows explicitly specifying desired widths' do
         tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
         expect(tag.attribute('srcset').value).to include('10w')
@@ -210,15 +203,43 @@ describe Imgix::Rails do
 
         it 'generates the expected number of srcset values' do
           tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
-          expect(tag.attribute('srcset').value.split(',').size).to eq(71)
+          expect(tag.attribute('srcset').value.split(',').size).to eq(31)
+        end
+
+        it 'generates the excpected number of srcset values with custom srcset-width-tolerance' do
+          Imgix::Rails.configure do |config|
+            config.imgix = {
+              source: "asserts.imgix.net",
+              srcset_width_tolerance: 0.5,
+            }
+          end
+
+          class Foo < Imgix::Rails::Tag
+            def initialize
+            end
+
+            def get_standard_widths
+              compute_standard_widths
+            end
+          end
+
+          expect(Foo.new.get_standard_widths.size).to eq(7)
+        end
+
+        it 'last value is a fallback image' do
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", url_params: {page: 3, w: 600, h: 300})).children[0]
+          expect(tag.attribute('srcset').value.split(',').last).not_to match("w=|h=")
         end
 
         it 'correctly calculates `h` to maintain aspect ratio, when specified' do
           tag = Nokogiri::HTML.fragment(helper.ix_image_tag('presskit/imgix-presskit.pdf', url_params: {page: 3, w: 600, h: 300})).children[0]
-          tag.attribute('srcset').value.split(',').each do |srcsetPair|
-            w = srcsetPair.match(/w=(\d+)/)[1].to_i
-            h = srcsetPair.match(/h=(\d+)/)[1].to_i
-            expect((w / 2.0).round).to eq(h)
+          sources = tag.attribute('srcset').value.split(',')
+          sources.each_with_index do |srcsetPair, i|
+            if i != (sources.size - 1)   # The last element doesn't have w, h
+              w = srcsetPair.match(/w=(\d+)/)[1].to_i
+              h = srcsetPair.match(/h=(\d+)/)[1].to_i
+              expect((w / 2.0).round).to eq(h)
+            end
           end
         end
 
@@ -228,7 +249,7 @@ describe Imgix::Rails do
           end
 
           it 'generates the expected number of srcset values' do
-            expect(tag.attribute('srcset').value.split(',').size).to eq(29)
+            expect(tag.attribute('srcset').value.split(',').size).to eq(9)
           end
         end
 
@@ -238,7 +259,7 @@ describe Imgix::Rails do
           end
 
           it 'generates the expected number of srcset values' do
-            expect(tag.attribute('srcset').value.split(',').size).to eq(1)
+            expect(tag.attribute('srcset').value.split(',').size).to eq(2)
           end
         end
       end
