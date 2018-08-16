@@ -50,6 +50,28 @@ describe Imgix::Rails::UrlHelper do
       }.not_to raise_error
     end
 
+    describe 'support host/hosts' do
+      it 'sets host if source is a String' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source
+          }
+        end
+
+        expect(url_helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
+      end
+
+      it 'sets hosts if source is an Array' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: [source]
+          }
+        end
+
+        expect(url_helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
+      end
+    end
+
     describe ':use_https' do
       it 'defaults to https' do
         Imgix::Rails.configure do |config|

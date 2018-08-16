@@ -50,12 +50,17 @@ module Imgix
         imgix = ::Imgix::Rails.config.imgix
 
         opts = {
-          host: imgix[:source],
           library_param: "rails",
           library_version: Imgix::Rails::VERSION,
           use_https: true,
           secure_url_token: imgix[:secure_url_token]
         }
+
+        if imgix[:source].is_a?(String)
+          opts[:host] = imgix[:source]
+        else
+          opts[:hosts] = imgix[:source]
+        end
 
         if imgix.has_key?(:include_library_param)
           opts[:include_library_param] = imgix[:include_library_param]
