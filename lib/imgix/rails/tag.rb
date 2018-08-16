@@ -4,25 +4,6 @@ class Imgix::Rails::Tag
   include Imgix::Rails::UrlHelper
   include ActionView::Helpers
 
-  @@parameters = nil
-
-  # Store our parameter information on the class instance so that
-  # each instance of any this class or our subclasses doesn't have to
-  # go back to disk to get this configuration information
-  def self.available_parameters
-    @@available_parameters ||= parameters.keys
-  end
-
-  def self.parameters
-    return @@parameters if @@parameters
-
-    path = File.expand_path("../../../../vendor/parameters.json", __FILE__)
-    @@parameters = JSON.parse(File.read(path), symbolize_names: true)[:parameters]
-    @@parameters[:widths] = nil
-
-    @@parameters
-  end
-
   def initialize(source, tag_options: {}, url_params: {}, widths: [])
     @source = source
     @tag_options = tag_options

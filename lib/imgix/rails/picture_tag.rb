@@ -18,10 +18,9 @@ class Imgix::Rails::PictureTag < Imgix::Rails::Tag
         source_tag_opts = opts[:tag_options] || {}
         source_url_params = opts[:url_params] || {}
         widths = opts[:widths]
-        if opts.except(:tag_options, :url_params, :widths).length > 0
-          ActiveSupport::Deprecation.warn('use :tag_options, :url_params, :widths instead.')
-          source_tag_opts = opts.slice!(*self.class.available_parameters).except(:widths)
-          source_url_params = opts.slice(*self.class.available_parameters).except(:widths)
+        unsupported_opts = opts.except(:tag_options, :url_params, :widths)
+        if unsupported_opts.length > 0
+          raise "'#{unsupported_opts.keys.join("', '")}' key(s) not supported; use tag_options, url_params, widths."
         end
 
         source_tag_opts[:media] ||= media
