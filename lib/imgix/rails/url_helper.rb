@@ -3,24 +3,56 @@ module Imgix
     class ConfigurationError < StandardError; end
 
     module UrlHelper
-      def ix_image_url(source, options={})
+      def ix_image_url(*args)
         validate_configuration!
 
-        source = replace_hostname(source)
+        case args.size
+        when 1
+          path = args[0]
+          source = nil
+          options = {}
+        when 2
+          if args[0].is_a?(String) && args[1].is_a?(Hash)
+            source = nil
+            path = args[0]
+            options = args[1]
+          elsif args[0].is_a?(String) && args[1].is_a?(String)
+            source = args[0]
+            path = args[1]
+            options = {}
+          else
+            raise RuntimeError.new("path and source must be of type String; options must be of type Hash")
+          end
+        when 3
+          source = args[0]
+          path = args[1]
+          options = args[2]
+        else
+          raise RuntimeError.new('path missing')
+        end
 
-        imgix_client.path(source).to_url(options).html_safe
+        imgix_client(source).path(path).to_url(options).html_safe
       end
 
       private
 
       def validate_configuration!
         imgix = ::Imgix::Rails.config.imgix
-        unless imgix.try(:[], :source)
-          raise ConfigurationError.new("imgix source is not configured. Please set config.imgix[:source].")
+
+        if imgix.slice(:source, :sources).size != 1
+          raise ConfigurationError.new("Exactly one of :source, :sources is required")
         end
 
-        unless imgix[:source].is_a?(Array) || imgix[:source].is_a?(String)
-          raise ConfigurationError.new("imgix source must be a String or an Array.")
+        if imgix[:source]
+          unless imgix[:source].is_a?(Array) || imgix[:source].is_a?(String)
+            raise ConfigurationError.new("imgix source must be a String or an Array.")
+          end
+        end
+
+        if imgix[:sources]
+          unless imgix[:sources].is_a?(Hash)
+            raise ConfigurationError.new(":sources must be a Hash")
+          end
         end
 
         unless !imgix.key?(:shard_strategy) || STRATEGIES.include?(imgix[:shard_strategy])
@@ -28,32 +60,22 @@ module Imgix
         end
       end
 
-      def replace_hostname(source)
-        new_source = source.dup
-
-        # Replace any hostnames configured to trim things down just to their paths.
-        # We use split to remove the protocol in the process.
-        hostnames_to_remove.each do |hostname|
-          splits = source.split(hostname)
-          new_source = splits.last if splits.size > 1
+      def imgix_client(source)
+        begin
+          return imgix_clients.fetch(source)
+        rescue KeyError
+          raise RuntimeError.new("Unknown source '#{source}'")
         end
-
-        new_source
       end
 
-      def hostnames_to_remove
-        Array(::Imgix::Rails.config.imgix[:hostname_to_replace] || ::Imgix::Rails.config.imgix[:hostnames_to_replace])
-      end
-
-      def imgix_client
-        return @imgix_client if @imgix_client
+      def imgix_clients
+        return @imgix_clients if @imgix_clients
         imgix = ::Imgix::Rails.config.imgix
 
         opts = {
           library_param: "rails",
           library_version: Imgix::Rails::VERSION,
           use_https: true,
-          secure_url_token: imgix[:secure_url_token]
         }
 
         if imgix[:source].is_a?(String)
@@ -74,7 +96,21 @@ module Imgix
           opts[:shard_strategy] = imgix[:shard_strategy]
         end
 
-        @imgix_client = ::Imgix::Client.new(opts)
+        sources = imgix[:sources] || { imgix[:source] => imgix[:secure_url_token] }
+        @imgix_clients = {}
+
+        sources.map do |source, token|
+          opts[:host] = source
+          opts[:secure_url_token] = token
+          @imgix_clients[source] = ::Imgix::Client.new(opts)
+        end
+
+        default_source = imgix[:default_source] || imgix[:source]
+        if default_source
+          @imgix_clients[nil] = @imgix_clients.fetch(default_source)
+        end
+
+        @imgix_clients
       end
     end
   end

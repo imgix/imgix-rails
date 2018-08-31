@@ -15,7 +15,6 @@ We recommend using something like [Paperclip](https://github.com/thoughtbot/pape
   * [ix_picture_tag](#ix_picture_tag)
   * [ix_image_url](#ix_image_url)
     * [Usage in Sprockets](#usage-in-sprockets)
-  * [Hostname Removal](#hostname-removal)
 * [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
   * [Paperclip and CarrierWave](#paperclip-and-carrierwave)
   * [Refile](#refile)
@@ -50,7 +49,7 @@ Before you get started, you will need to define your imgix configuration in your
 ```ruby
 Rails.application.configure do
   config.imgix = {
-    source: "Name of your source, e.g. assets.imgix.net"
+    source: "assets.imgix.net"
   }
 end
 ```
@@ -59,9 +58,30 @@ The following configuration flags will be respected:
 
 - `:use_https` toggles the use of HTTPS. Defaults to `true`
 - `:source` a String or Array that specifies the imgix Source address. Should be in the form of `"assets.imgix.net"`.
-- `:secure_url_token` a optional secure URL token found in your dashboard (https://webapp.imgix.com) used for signing requests
-- `:hostnames_to_replace` an Array of hostnames to replace with the value(s) specified by `:source`. This is useful if you store full-qualified S3 URLs in your database, but want to serve images through imgix.
-- `shard_strategy`: Specify [domain sharding strategy](https://github.com/imgix/imgix-rb#domain-sharded-urls) with multiple sources. Acceptable values are `:cycle` and `:crc`. `:crc` is used by default.
+- `:srcset_width_tolerance` an optional numeric value determining the maximum tolerance allowable, between the downloaded dimensions and rendered dimensions of the image (default `.08` i.e. `8%`).
+- `:secure_url_token` an optional secure URL token found in your dashboard (https://dashboard.imgix.com) used for signing requests
+- `:shard_strategy` Specify [domain sharding strategy](https://github.com/imgix/imgix-rb#domain-sharded-urls) with multiple sources. Acceptable values are `:cycle` and `:crc`. `:crc` is used by default.
+
+#### Multi-source configuration
+
+In addition to the standard configuration flags, the following options can be used for multi-source support.
+
+- `:sources` a Hash of imgix source-secure_url_token key-value pairs. If the value for a source is `nil`, URLs generated for the corresponding source won't be secured. `:sources` and `:source` *cannot* be used together.
+- `:default_source` optionally specify a default source for generating URLs.
+
+Example:
+
+```ruby
+Rails.application.configure do
+  config.imgix = {
+    sources: {
+      "assets.imgix.net"  => "foobarbaz",
+      "assets2.imgix.net" => nil,   # Will generate unsigned URLs
+    },
+    default_source: "assets.imgix.net"
+  }
+end
+```
 
 <a name="ix_image_tag"></a>
 ### ix_image_tag
@@ -69,6 +89,13 @@ The following configuration flags will be respected:
 The `ix_image_tag` helper method makes it easy to pass parameters to imgix to handle resizing, cropping, etc. It also simplifies adding responsive imagery to your Rails app by automatically generating a `srcset` based on the parameters you pass. We talk a bit about using the `srcset` attribute in an application in the following blog post: [“Responsive Images with `srcset` and imgix.”](https://blog.imgix.com/2015/08/18/responsive-images-with-srcset-imgix.html).
 
 `ix_image_tag` generates `<img>` tags with a filled-out `srcset` attribute that leans on imgix to do the hard work. If you already know the minimum or maximum number of physical pixels that this image will need to be displayed at, you can pass the `min_width` and/or `max_width` options. This will result in a smaller, more tailored `srcset`.
+
+`ix_image_tag` takes the following arguments:
+
+* `source`: an optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
+* `path`: The path or URL of the image to display.
+* `tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
+* `url_params`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
 
 ```erb
 <%= ix_image_tag('/unsplash/hotairballoon.jpg', url_params: { w: 300, h: 500, fit: 'crop', crop: 'right'}, tag_options: { alt: 'A hot air balloon on a sunny day' }) %>
@@ -89,6 +116,14 @@ Will render out HTML like the following:
   src="https://assets.imgix.net/unsplash/hotairballoon.jpg?w=300&amp;h=500&amp;fit=crop&amp;crop=right"
 >
 ```
+
+Similarly
+
+```erb
+<%= ix_image_tag('assets2.imgix.net', '/unsplash/hotairballoon.jpg') %>
+```
+
+Will generate URLs using `assets2.imgix.net` source.
 
 We recommend leveraging this to generate powerful helpers within your application like the following:
 
@@ -116,14 +151,14 @@ If you already know all the exact widths you need images for, you can specify th
 
 The `ix_picture_tag` helper method makes it easy to generate `picture` elements in your Rails app. `picture` elements are useful when an images needs to be art directed differently at different screen sizes.
 
-`ix_picture_tag` takes four arguments:
+`ix_picture_tag` takes the following arguments:
 
-* `source`: The path or URL of the image to display.
+* `source`: an optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
+* `path`: The path or URL of the image to display.
 * `tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
 * `url_params`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
 * `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of param overrides for that media query. A `source` element will be generated for each breakpoint specified.
-* (deprecated) `picture_tag_options`: Use `tag_options` instead.
-* (deprecated) `imgix_default_options`: Use `url_params` instead.
+
 ```erb
 <%= ix_picture_tag('bertandernie.jpg',
   tag_options: {
@@ -163,20 +198,42 @@ The `ix_picture_tag` helper method makes it easy to generate `picture` elements 
 ) %>
 ```
 
+To generate a `picture` element on a different source:
+
+```erb
+<%= ix_picture_tag('assets2.imgix.net', 'bertandernie.jpg',
+      tag_options: {},
+      url_params: {},
+      breakpoints: {
+        '(max-width: 640px)' => {
+          url_params: { h: 100 },
+          tag_options: { sizes: 'calc(100vw - 20px)' }
+        },
+      }
+   ) %>
+```
 
 <a name="ix_image_url"></a>
 ### ix_image_url
 
 The `ix_image_url` helper makes it easy to generate a URL to an image in your Rails app.
 
+`ix_image_url` takes four arguments:
+
+* `source`: an optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
+* `path`: The path or URL of the image to display.
+* `options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
+
 ```erb
 <%= ix_image_url('/users/1/avatar.png', { w: 400, h: 300 }) %>
+<%= ix_image_url('assets2.imgix.net', '/users/1/avatar.png', { w: 400, h: 300 }) %>
 ```
 
-Will generate the following URL:
+Will generate the following URLs:
 
 ```html
 https://assets.imgix.net/users/1/avatar.png?w=400&h=300
+https://assets2.imgix.net/users/1/avatar.png?w=400&h=300
 ```
 
 Since `ix_image_url` lives inside `UrlHelper`, it can also be used in places other than your views quite easily. This is useful for things such as including imgix URLs in JSON output from a serializer class.
@@ -198,40 +255,6 @@ puts ix_image_url('/users/1/avatar.png', { w: 400, h: 300 })
   background-image: url(<%= ix_image_url('a-background.png', { w: 400, h: 300 }) %>);
 }
 ```
-
-### Hostname Removal
-
-You can also configure imgix-rails to disregard given hostnames and only use the path component from given URLs. This is useful if you have [a Web Folder or an Amazon S3 imgix Source configured](https://www.imgix.com/docs/tutorials/creating-sources) but store the fully-qualified URLs for those resources in your database.
-
-For example, let's say you are using S3 for storage. An `#avatar_url` value might look like the following in your application:
-
-```ruby
-@user.avatar_url #=> "https://s3.amazonaws.com/my-bucket/users/1.png"
-```
-
-You would then configure imgix in your Rails application to disregard the `'s3.amazonaws.com'` hostname:
-
-```ruby
-Rails.application.configure do
-  config.imgix = {
-    source: "my-imgix-source.imgix.net",
-    hostname_to_replace: "s3.amazonaws.com"
-  }
-end
-```
-
-Now when you call `ix_image_tag` or another helper, you get an imgix URL:
-
-```erb
-<%= ix_image_tag(@user.avatar_url) %>
-```
-
-Renders:
-
-```html
-<img src="https://my-imgix-source.imgix.net/my-bucket/users/1.png" />
-```
-
 
 <a name="using-with-image-uploading-libraries"></a>
 ## Using With Image Uploading Libraries

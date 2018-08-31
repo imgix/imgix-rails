@@ -39,7 +39,7 @@ describe Imgix::Rails do
     it 'expects config.imgix.source to be defined' do
       expect{
         helper.ix_image_tag("assets.png")
-      }.to raise_error(Imgix::Rails::ConfigurationError, "imgix source is not configured. Please set config.imgix[:source].")
+      }.to raise_error(Imgix::Rails::ConfigurationError)
     end
 
     it 'expects config.imgix.source to be a String or an Array' do
@@ -87,58 +87,6 @@ describe Imgix::Rails do
         expect(tag.attribute('src').value).to eq("http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}")
       end
     end
-
-    describe 'hostname removal' do
-      let(:hostname) { 's3.amazonaws.com' }
-      let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
-      let(:yet_another_hostname) { 's3-sa-east-1.amazonaws.com' }
-      let(:app) { Class.new(::Rails::Application) }
-      let(:source) { "assets.imgix.net" }
-
-      before do
-        Imgix::Rails.configure { |config| config.imgix = { source: source } }
-      end
-
-      it 'does not remove a hostname for a fully-qualified URL' do
-        Imgix::Rails.configure do |config|
-          config.imgix = {
-            source: source,
-            hostname_to_replace: hostname
-          }
-        end
-
-        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://adifferenthostname.com/image.jpg", url_params: {w: 400, h: 300})).children[0]
-
-        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/https%3A%2F%2Fadifferenthostname.com%2Fimage.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&w=400&h=300")
-      end
-
-      it 'removes a single hostname' do
-        Imgix::Rails.configure do |config|
-          config.imgix = {
-            source: source,
-            hostname_to_replace: hostname
-          }
-        end
-
-        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://#{hostname}/image.jpg", url_params: {w: 400, h: 300})).children[0]
-        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&w=400&h=300")
-      end
-
-      it 'removes multiple configured protocol/hostname combos' do
-        Imgix::Rails.configure do |config|
-          config.imgix = {
-            source: source,
-            hostnames_to_replace: [another_hostname, yet_another_hostname]
-          }
-        end
-
-        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://#{another_hostname}/image.jpg", url_params: {w: 400, h: 300})).children[0]
-        another_tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://#{yet_another_hostname}/image.jpg", url_params: {w: 400, h: 300})).children[0]
-
-        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&w=400&h=300")
-        expect(another_tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&w=400&h=300")
-      end
-    end
   end
 
   describe Imgix::Rails::ViewHelper do
@@ -153,6 +101,13 @@ describe Imgix::Rails do
       it 'prints an image URL' do
         expect(helper.ix_image_url("image.jpg")).to eq "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
       end
+
+      it 'raises error when path not supplied' do
+        expect{
+          helper.ix_image_url()
+        }.to raise_error
+      end
+
 
       it 'signs image URLs with ixlib=rails' do
         image_url = URI.parse(helper.ix_image_url("image.jpg", { h: 300,  w: 400 }))
@@ -182,350 +137,220 @@ describe Imgix::Rails do
     end
 
     describe '#ix_image_tag' do
-      describe '#ix_picture_tag directly specifying options' do
-        it 'prints an image_tag' do
-          ActiveSupport::Deprecation.silence do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
-            expect(tag.name).to eq('img')
-          end
+      it 'prints an image_tag' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
+        expect(tag.name).to eq('img')
+      end
+
+      it 'passes through non-imgix tags' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {alt: "No Church in the Wild"}, url_params: {w: 400, h: 300})).children[0]
+        expect(tag.attribute('alt').value).to eq('No Church in the Wild')
+      end
+
+      it 'passes through non-imgix url params' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {alt: "No Church in the Wild"}, url_params: {w: 400, h: 300, foo: "bar"})).children[0]
+        expect(tag.attribute('src').value).to include('foo=bar')
+      end
+
+      it 'allows explicitly specifying desired widths' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
+        expect(tag.attribute('srcset').value).to include('10w')
+        expect(tag.attribute('srcset').value).to include('20w')
+        expect(tag.attribute('srcset').value).to include('30w')
+      end
+
+      it 'does not include `widths` as an attribute in the generated tag' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
+        expect(tag.attribute('widths')).to be_nil
+      end
+
+      it 'does not include `widths` as a query parameter in the generated `srcset`' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
+        expect(tag.attribute('srcset').value).not_to include('widths')
+      end
+
+      it 'does not include `widths` as a query parameter in the generated `src`' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
+        expect(tag.attribute('src').value).not_to include('widths')
+      end
+
+      it 'applies the client-hints parameter' do
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", url_params: {ch: "Width,DPR"})).children[0]
+        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR")
+      end
+
+      describe 'sizes' do
+        it 'sets a default value of 100vw if not specified' do
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg')).children[0]
+          expect(tag.attribute('sizes').value).to eq('100vw')
         end
 
-        it 'passes through non-imgix tags' do
-          ActiveSupport::Deprecation.silence do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", alt: "No Church in the Wild", w: 400, h: 300)).children[0]
-            expect(tag.attribute('alt').value).to eq('No Church in the Wild')
-          end
-        end
-
-        it 'adds exact 1x, 2x, and 3x multiples of the passed `w` to the generated `srcset`' do
-          ActiveSupport::Deprecation.silence do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', w: 430)).children[0]
-            expect(tag.attribute('srcset').value).to include('430w')
-            expect(tag.attribute('srcset').value).to include('860w')
-            expect(tag.attribute('srcset').value).to include('1290w')
-          end
-        end
-
-        it 'allows explicitly specifying desired widths' do
-          ActiveSupport::Deprecation.silence do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], w: 400, h: 300)).children[0]
-            expect(tag.attribute('srcset').value).to include('10w')
-            expect(tag.attribute('srcset').value).to include('20w')
-            expect(tag.attribute('srcset').value).to include('30w')
-          end
-        end
-
-        it 'does not include `widths` as an attribute in the generated tag' do
-          ActiveSupport::Deprecation.silence do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], w: 400, h: 300)).children[0]
-            expect(tag.attribute('widths')).to be_nil
-          end
-        end
-
-        it 'does not include `widths` as a query parameter in the generated `srcset`' do
-          ActiveSupport::Deprecation.silence do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], w: 400, h: 300)).children[0]
-            expect(tag.attribute('srcset').value).not_to include('widths')
-          end
-        end
-
-        it 'does not include `widths` as a query parameter in the generated `src`' do
-          ActiveSupport::Deprecation.silence do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], w: 400, h: 300)).children[0]
-            expect(tag.attribute('src').value).not_to include('widths')
-          end
-        end
-
-        it 'applies the client-hints parameter' do
-          ActiveSupport::Deprecation.silence do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", ch: "Width,DPR")).children[0]
-            expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR")
-          end
-        end
-
-        describe 'sizes' do
-          it 'sets a default value of 100vw if not specified' do
-            ActiveSupport::Deprecation.silence do
-              tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg')).children[0]
-              expect(tag.attribute('sizes').value).to eq('100vw')
-            end
-          end
-
-          it 'does not override an explicit `sizes` value' do
-            ActiveSupport::Deprecation.silence do
-              sizes_value = 'calc(100vw - 20px - 50%)'
-              tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', sizes: sizes_value)).children[0]
-              expect(tag.attribute('sizes').value).to eq(sizes_value)
-            end
-          end
-        end
-
-        describe 'srcset' do
-          let(:app) { Class.new(::Rails::Application) }
-          let(:source) { "assets.imgix.net" }
-          let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
-
-          before do
-            Imgix::Rails.configure { |config| config.imgix = { source: source } }
-          end
-
-          it 'generates the expected number of srcset values' do
-            ActiveSupport::Deprecation.silence do
-              tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
-              expect(tag.attribute('srcset').value.split(',').size).to eq(71)
-            end
-          end
-
-          it 'correctly calculates `h` to maintain aspect ratio, when specified' do
-            ActiveSupport::Deprecation.silence do
-              tag = Nokogiri::HTML.fragment(helper.ix_image_tag('presskit/imgix-presskit.pdf', page: 3, w: 600, h: 300)).children[0]
-              tag.attribute('srcset').value.split(',').each do |srcsetPair|
-                w = srcsetPair.match(/w=(\d+)/)[1].to_i
-                h = srcsetPair.match(/h=(\d+)/)[1].to_i
-                expect((w / 2.0).round).to eq(h)
-              end
-            end
-          end
-
-          context 'with min_width' do
-            let(:tag) do
-              ActiveSupport::Deprecation.silence do
-                Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", min_width: 2560)).children[0]
-              end
-            end
-
-            it 'generates the expected number of srcset values' do
-              expect(tag.attribute('srcset').value.split(',').size).to eq(29)
-            end
-          end
-
-          context 'with max_width' do
-            let(:tag) do
-              ActiveSupport::Deprecation.silence do
-                Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", max_width: 100)).children[0]
-              end
-            end
-
-            it 'generates the expected number of srcset values' do
-              expect(tag.attribute('srcset').value.split(',').size).to eq(1)
-            end
-          end
-
-          it 'replaces the hostname' do
-            Imgix::Rails.configure do |config|
-              config.imgix = {
-                source: source,
-                hostnames_to_replace: [another_hostname]
-              }
-            end
-
-            ActiveSupport::Deprecation.silence do
-              tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://#{another_hostname}/image.jpg")).children[0]
-              expect(tag.attribute('srcset').value).not_to include(another_hostname)
-            end
-          end
+        it 'does not override an explicit `sizes` value' do
+          sizes_value = 'calc(100vw - 20px - 50%)'
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', tag_options: {sizes: sizes_value})).children[0]
+          expect(tag.attribute('sizes').value).to eq(sizes_value)
         end
       end
 
-      describe '#ix_picture_tag using :tag_options and :url_params' do
-        it 'prints an image_tag' do
+      describe 'srcset' do
+        let(:app) { Class.new(::Rails::Application) }
+        let(:source) { "assets.imgix.net" }
+        let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
+
+        before do
+          Imgix::Rails.configure { |config| config.imgix = { source: source } }
+        end
+
+        it 'generates the expected number of srcset values' do
           tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
-          expect(tag.name).to eq('img')
+          expect(tag.attribute('srcset').value.split(',').size).to eq(31)
         end
 
-        it 'passes through non-imgix tags' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {alt: "No Church in the Wild"}, url_params: {w: 400, h: 300})).children[0]
-          expect(tag.attribute('alt').value).to eq('No Church in the Wild')
-        end
-
-        it 'passes through non-imgix url params' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {alt: "No Church in the Wild"}, url_params: {w: 400, h: 300, foo: "bar"})).children[0]
-          expect(tag.attribute('src').value).to include('foo=bar')
-        end
-
-        it 'adds exact 1x, 2x, and 3x multiples of the passed `w` to the generated `srcset`' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', url_params: {w: 430})).children[0]
-          expect(tag.attribute('srcset').value).to include('430w')
-          expect(tag.attribute('srcset').value).to include('860w')
-          expect(tag.attribute('srcset').value).to include('1290w')
-        end
-
-        it 'allows explicitly specifying desired widths' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
-          expect(tag.attribute('srcset').value).to include('10w')
-          expect(tag.attribute('srcset').value).to include('20w')
-          expect(tag.attribute('srcset').value).to include('30w')
-        end
-
-        it 'does not include `widths` as an attribute in the generated tag' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
-          expect(tag.attribute('widths')).to be_nil
-        end
-
-        it 'does not include `widths` as a query parameter in the generated `srcset`' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
-          expect(tag.attribute('srcset').value).not_to include('widths')
-        end
-
-        it 'does not include `widths` as a query parameter in the generated `src`' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
-          expect(tag.attribute('src').value).not_to include('widths')
-        end
-
-        it 'applies the client-hints parameter' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", url_params: {ch: "Width,DPR"})).children[0]
-          expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR")
-        end
-
-        describe 'sizes' do
-          it 'sets a default value of 100vw if not specified' do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg')).children[0]
-            expect(tag.attribute('sizes').value).to eq('100vw')
+        it 'generates the excpected number of srcset values with custom srcset-width-tolerance' do
+          Imgix::Rails.configure do |config|
+            config.imgix = {
+              source: "asserts.imgix.net",
+              srcset_width_tolerance: 0.5,
+            }
           end
 
-          it 'does not override an explicit `sizes` value' do
-            sizes_value = 'calc(100vw - 20px - 50%)'
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', tag_options: {sizes: sizes_value})).children[0]
-            expect(tag.attribute('sizes').value).to eq(sizes_value)
+          class Foo < Imgix::Rails::Tag
+            def initialize
+            end
+
+            def get_standard_widths
+              compute_standard_widths
+            end
           end
+
+          expect(Foo.new.get_standard_widths.size).to eq(7)
         end
 
-        describe 'srcset' do
-          let(:app) { Class.new(::Rails::Application) }
-          let(:source) { "assets.imgix.net" }
-          let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
+        it 'last value is a fallback image' do
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", url_params: {page: 3, w: 600, h: 300})).children[0]
+          expect(tag.attribute('srcset').value.split(',').last).not_to match("w=|h=")
+        end
 
-          before do
-            Imgix::Rails.configure { |config| config.imgix = { source: source } }
-          end
-
-          it 'generates the expected number of srcset values' do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
-            expect(tag.attribute('srcset').value.split(',').size).to eq(71)
-          end
-
-          it 'correctly calculates `h` to maintain aspect ratio, when specified' do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag('presskit/imgix-presskit.pdf', url_params: {page: 3, w: 600, h: 300})).children[0]
-            tag.attribute('srcset').value.split(',').each do |srcsetPair|
+        it 'correctly calculates `h` to maintain aspect ratio, when specified' do
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('presskit/imgix-presskit.pdf', url_params: {page: 3, w: 600, h: 300})).children[0]
+          sources = tag.attribute('srcset').value.split(',')
+          sources.each_with_index do |srcsetPair, i|
+            if i != (sources.size - 1)   # The last element doesn't have w, h
               w = srcsetPair.match(/w=(\d+)/)[1].to_i
               h = srcsetPair.match(/h=(\d+)/)[1].to_i
               expect((w / 2.0).round).to eq(h)
             end
           end
+        end
 
-          context 'with min_width' do
-            let(:tag) do
-              Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {min_width: 2560})).children[0]
-            end
-
-            it 'generates the expected number of srcset values' do
-              expect(tag.attribute('srcset').value.split(',').size).to eq(29)
-            end
+        context 'with min_width' do
+          let(:tag) do
+            Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {min_width: 2560})).children[0]
           end
 
-          context 'with max_width' do
-            let(:tag) do
-              Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {max_width: 100})).children[0]
-            end
+          it 'generates the expected number of srcset values' do
+            expect(tag.attribute('srcset').value.split(',').size).to eq(9)
+          end
+        end
 
-            it 'generates the expected number of srcset values' do
-              expect(tag.attribute('srcset').value.split(',').size).to eq(1)
-            end
+        context 'with max_width' do
+          let(:tag) do
+            Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {max_width: 100})).children[0]
           end
 
-          it 'replaces the hostname' do
-            Imgix::Rails.configure do |config|
-              config.imgix = {
-                source: source,
-                hostnames_to_replace: [another_hostname]
-              }
-            end
-
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("https://#{another_hostname}/image.jpg")).children[0]
-            expect(tag.attribute('srcset').value).not_to include(another_hostname)
+          it 'generates the expected number of srcset values' do
+            expect(tag.attribute('srcset').value.split(',').size).to eq(2)
           end
         end
       end
     end
 
     describe '#ix_picture_tag' do
-      describe '#ix_picture_tag using :picture_tag_options and :imgix_default_options' do
-        let(:tag) do
-          ActiveSupport::Deprecation.silence do
-            picture_tag = helper.ix_picture_tag(
-              'bertandernie.jpg',
-              picture_tag_options: {
-                class: 'a-picture-tag'
+      let(:tag) do
+        picture_tag = helper.ix_picture_tag(
+          'bertandernie.jpg',
+          tag_options: {
+            class: 'a-picture-tag'
+          },
+          url_params: {
+            w: 300,
+            h: 300,
+            fit: 'crop',
+          },
+          breakpoints: {
+            '(max-width: 640px)' => {
+              tag_options: {
+                sizes: 'calc(100vw - 20px)'
               },
-              imgix_default_options: {
-                w: 300,
-                h: 300,
-                fit: 'crop',
-              },
-              breakpoints: {
-                '(max-width: 640px)' => {
-                  h: 100,
-                  sizes: 'calc(100vw - 20px)'
-                },
-                '(max-width: 880px)' => {
-                  crop: 'right',
-                  sizes: 'calc(100vw - 20px - 50%)'
-                },
-                '(min-width: 881px)' => {
-                  crop: 'left',
-                  sizes: '430px'
-                }
+              url_params: {
+                h: 100,
               }
-            )
+            },
+            '(max-width: 880px)' => {
+              url_params: {
+                crop: 'right'
+              },
+              tag_options: {
+                sizes: 'calc(100vw - 20px - 50%)'
+              }
+            },
+            '(min-width: 881px)' => {
+              url_params: {
+                crop: 'left',
+              },
+              tag_options: {
+                sizes: '430px'
+              }
+            }
+          }
+        )
 
-            Nokogiri::HTML.fragment(picture_tag).children[0]
-          end
-        end
+        Nokogiri::HTML.fragment(picture_tag).children[0]
+      end
 
-        it 'generates a `picture`' do
-          expect(tag.name).to eq('picture')
-        end
+      it 'generates a `picture`' do
+        expect(tag.name).to eq('picture')
+      end
 
-        it 'passes through options to the `picture`' do
-          expect(tag.attribute('class').value).to eq('a-picture-tag')
-        end
+      it 'passes through options to the `picture`' do
+        expect(tag.attribute('class').value).to eq('a-picture-tag')
+      end
 
-        it 'generates the specified number of `source` children' do
-          expect(tag.css('source').length).to eq(3)
-        end
+      it 'generates the specified number of `source` children' do
+        expect(tag.css('source').length).to eq(3)
+      end
 
-        it 'generates a fallback `img` child' do
-          expect(tag.css('img').length).to eq(1)
-        end
+      it 'generates a fallback `img` child' do
+        expect(tag.css('img').length).to eq(1)
+      end
 
-        it 'sets the specified `media` on each `source`' do
-          expected_media = [
-            '(max-width: 640px)',
-            '(max-width: 880px)',
-            '(min-width: 881px)'
-          ]
+      it 'sets the specified `media` on each `source`' do
+        expected_media = [
+          '(max-width: 640px)',
+          '(max-width: 880px)',
+          '(min-width: 881px)'
+        ]
 
-          tag.css('source').each_with_index do |source, i|
-            expect(source.attribute('media').value).to eq(expected_media[i])
-          end
-        end
-
-        it 'sets the specified `sizes` on each `source`' do
-          expected_sizes = [
-            'calc(100vw - 20px)',
-            'calc(100vw - 20px - 50%)',
-            '430px'
-          ]
-
-          tag.css('source').each_with_index do |source, i|
-            expect(source.attribute('sizes').value).to eq(expected_sizes[i])
-          end
+        tag.css('source').each_with_index do |source, i|
+          expect(source.attribute('media').value).to eq(expected_media[i])
         end
       end
 
-      describe '#ix_picture_tag using :tag_options and :url_params' do
-        let(:tag) do
-          picture_tag = helper.ix_picture_tag(
+      it 'sets the specified `sizes` on each `source`' do
+        expected_sizes = [
+          'calc(100vw - 20px)',
+          'calc(100vw - 20px - 50%)',
+          '430px'
+        ]
+
+        tag.css('source').each_with_index do |source, i|
+          expect(source.attribute('sizes').value).to eq(expected_sizes[i])
+        end
+      end
+
+      it 'throws error on unsupported options in breakpoints' do
+        expect{
+          helper.ix_picture_tag(
             'bertandernie.jpg',
             tag_options: {
               class: 'a-picture-tag'
@@ -536,6 +361,129 @@ describe Imgix::Rails do
               fit: 'crop',
             },
             breakpoints: {
+              '(max-width: 640px)' => {
+                foo: 'foo',
+                bar: 'bar',
+                tag_options: {
+                  sizes: 'calc(100vw - 20px)'
+                },
+                url_params: {
+                  h: 100,
+                }
+              }
+            }
+          )
+        }.to raise_error(RuntimeError, /key\(s\) not supported/)
+      end
+    end
+  end
+
+  describe 'multi-source' do
+    describe 'with default_source specified' do
+      let(:app) { Class.new(::Rails::Application) }
+      let(:sources) { { "assets.imgix.net" => nil, "assets2.imgix.net" => nil } }
+      let(:default_source) { "assets.imgix.net" }
+
+      before do
+        Imgix::Rails.configure { |config| config.imgix = { sources: sources, default_source: default_source } }
+      end
+
+      describe '#ix_image_url' do
+        describe 'prints an image URL' do
+            it 'with no source supplied' do
+              expect(helper.ix_image_url("image.jpg")).to eq "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
+            end
+
+            it 'with explicit source supplied' do
+              expect(helper.ix_image_url("assets2.imgix.net", "image.jpg")).to eq "https://assets2.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
+            end
+        end
+
+        describe 'injects any imgix parameters given' do
+          it 'with no source supplied' do
+            image_url = URI.parse(helper.ix_image_url("image.jpg", { h: 300,  w: 400 }))
+            url_query = CGI::parse(image_url.query)
+
+            expect(url_query['w']).to eq ['400']
+            expect(url_query['h']).to eq ['300']
+          end
+
+          it 'with explicit source supplied' do
+            image_url = URI.parse(helper.ix_image_url("assets2.imgix.net", "image.jpg", { h: 300,  w: 400 }))
+            url_query = CGI::parse(image_url.query)
+
+            expect(url_query['w']).to eq ['400']
+            expect(url_query['h']).to eq ['300']
+          end
+        end
+
+        describe 'signs an image path if a :secure_url_token is given' do
+          before do
+            Imgix::Rails.configure do |config|
+              config.imgix = {
+                sources: {
+                  "assets.imgix.net" => "FOO123bar",
+                  "assets2.imgix.net" => "bazbarfoo",
+                },
+                default_source: "assets.imgix.net",
+                include_library_param: false
+              }
+            end
+          end
+
+          it 'with no source supplied' do
+            expect(helper.ix_image_url("/users/1.png")).to eq "https://assets.imgix.net/users/1.png?s=6797c24146142d5b40bde3141fd3600c"
+          end
+
+          it 'with default source explicitly supplied' do
+            expect(helper.ix_image_url("assets.imgix.net", "/users/1.png")).to eq "https://assets.imgix.net/users/1.png?s=6797c24146142d5b40bde3141fd3600c"
+          end
+
+          it 'with different source explicity supplied' do
+            expect(helper.ix_image_url("assets2.imgix.net", "/users/1.png")).to eq "https://assets2.imgix.net/users/1.png?s=07b9d5cf18f35c04f1e1872d9ccfa6ea"
+          end
+        end
+      end
+
+      describe '#ix_image_tag' do
+        describe 'prints an image_tag' do
+          it 'with no source supplied' do
+            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
+            expect(tag.name).to eq('img')
+            expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}")
+          end
+
+          it 'with explicit source supplied' do
+            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("assets2.imgix.net", "image.jpg")).children[0]
+            expect(tag.name).to eq('img')
+            expect(tag.attribute('src').value).to eq("https://assets2.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}")
+          end
+        end
+
+        describe 'passes through tag_options, url_params' do
+          it 'with no source supplied' do
+            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {alt: "No Church in the Wild"}, url_params: {w: 400, h: 300, foo: "bar"})).children[0]
+            expect(tag.attribute('src').value).to include('foo=bar')
+          end
+
+          it 'with explicit source supplied' do
+            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("assets2.imgix.net", "image.jpg", tag_options: {alt: "No Church in the Wild"}, url_params: {w: 400, h: 300, foo: "bar"})).children[0]
+            expect(tag.attribute('src').value).to include('w=400')
+            expect(tag.attribute('src').value).to include('h=300')
+            expect(tag.attribute('src').value).to include('foo=bar')
+            expect(tag.attribute('alt').value).to eq("No Church in the Wild")
+          end
+        end
+      end
+
+      describe '#ix_picture_tag' do
+        let(:tag_options) { { class: 'a-picture-tag' } }
+        let(:url_params) { {
+              w: 300,
+              h: 300,
+              fit: 'crop',
+            } }
+        let(:breakpoints) { {
               '(max-width: 640px)' => {
                 tag_options: {
                   sizes: 'calc(100vw - 20px)'
@@ -560,51 +508,184 @@ describe Imgix::Rails do
                   sizes: '430px'
                 }
               }
-            }
-          )
+            } }
 
-          Nokogiri::HTML.fragment(picture_tag).children[0]
-        end
+        describe 'generates a `picture`' do
+          it 'with no source supplied' do
+            picture_tag = helper.ix_picture_tag(
+              'bertandernie.jpg',
+              tag_options: tag_options,
+              url_params: url_params,
+              breakpoints: breakpoints,
+            )
+            tag = Nokogiri::HTML.fragment(picture_tag).children[0]
+            expect(tag.name).to eq('picture')
+            expect(tag.css('img')[0].attribute('src').value).to start_with("https://assets.imgix.net")
+          end
 
-        it 'generates a `picture`' do
-          expect(tag.name).to eq('picture')
-        end
-
-        it 'passes through options to the `picture`' do
-          expect(tag.attribute('class').value).to eq('a-picture-tag')
-        end
-
-        it 'generates the specified number of `source` children' do
-          expect(tag.css('source').length).to eq(3)
-        end
-
-        it 'generates a fallback `img` child' do
-          expect(tag.css('img').length).to eq(1)
-        end
-
-        it 'sets the specified `media` on each `source`' do
-          expected_media = [
-            '(max-width: 640px)',
-            '(max-width: 880px)',
-            '(min-width: 881px)'
-          ]
-
-          tag.css('source').each_with_index do |source, i|
-            expect(source.attribute('media').value).to eq(expected_media[i])
+          it 'with explicit source supplied' do
+            picture_tag = helper.ix_picture_tag(
+              'assets2.imgix.net',
+              'bertandernie.jpg',
+              tag_options: tag_options,
+              url_params: url_params,
+              breakpoints: breakpoints,
+            )
+            tag = Nokogiri::HTML.fragment(picture_tag).children[0]
+            expect(tag.name).to eq('picture')
+            expect(tag.css('img')[0].attribute('src').value).to start_with("https://assets2.imgix.net")
           end
         end
 
-        it 'sets the specified `sizes` on each `source`' do
-          expected_sizes = [
-            'calc(100vw - 20px)',
-            'calc(100vw - 20px - 50%)',
-            '430px'
-          ]
+        describe 'passes through options to the `picture`' do
+          it 'with no source supplied' do
+            picture_tag = helper.ix_picture_tag(
+              'bertandernie.jpg',
+              tag_options: tag_options,
+              url_params: url_params,
+              breakpoints: breakpoints,
+            )
+            tag = Nokogiri::HTML.fragment(picture_tag).children[0]
+            expect(tag.attribute('class').value).to eq('a-picture-tag')
+          end
 
-          tag.css('source').each_with_index do |source, i|
-            expect(source.attribute('sizes').value).to eq(expected_sizes[i])
+          it 'with explicit source supplied' do
+            picture_tag = helper.ix_picture_tag(
+              'assets2.imgix.net',
+              'bertandernie.jpg',
+              tag_options: tag_options,
+              url_params: url_params,
+              breakpoints: breakpoints,
+            )
+            tag = Nokogiri::HTML.fragment(picture_tag).children[0]
+            url = tag.css('img')[0].attribute('src').value
+
+            # tag_options
+            expect(tag.attribute('class').value).to eq('a-picture-tag')
+
+            # url_params
+            expect(url).to include("w=300")
+            expect(url).to include("h=300")
+            expect(url).to include("fit=crop")
+
+            # breakpoints
+            expected_media = [
+              '(max-width: 640px)',
+              '(max-width: 880px)',
+              '(min-width: 881px)'
+            ]
+            tag.css('source').each_with_index do |source, i|
+              expect(source.attribute('media').value).to eq(expected_media[i])
+            end
           end
         end
+      end
+
+      it 'raises error for unknown source' do
+        expect{
+          helper.ix_image_url("foo.bar", "image.jpg")
+        }.to raise_error(RuntimeError)
+      end
+    end
+
+    describe 'no default_source specified' do
+      let(:app) { Class.new(::Rails::Application) }
+      let(:sources) { { "assets.imgix.net" => nil, "assets2.imgix.net" => nil } }
+
+      before do
+        Imgix::Rails.configure { |config| config.imgix = { sources: sources } }
+      end
+
+      describe '#ix_image_url' do
+        it 'raises error when no source is supplied' do
+          expect{
+            helper.ix_image_url("image.jpg")
+          }.to raise_error(RuntimeError)
+        end
+
+        it "doesn't raise error when source is supplied" do
+          expect{
+            helper.ix_image_url("assets2.imgix.net", "image.jpg")
+          }.not_to raise_error
+        end
+      end
+
+      describe '#ix_image_tag' do
+        it 'raises error when no source is supplied' do
+          expect{
+            helper.ix_image_tag("image.jpg")
+          }.to raise_error(RuntimeError)
+        end
+
+        it "doesn't raise error when source is supplied" do
+          expect{
+            helper.ix_image_tag("assets2.imgix.net", "image.jpg")
+          }.not_to raise_error
+        end
+      end
+
+      describe '#ix_picture_tag' do
+        let(:tag_options) { { class: 'a-picture-tag' } }
+        let(:url_params) { {
+              w: 300,
+              h: 300,
+              fit: 'crop',
+            } }
+        let(:breakpoints) { {
+              '(max-width: 640px)' => {
+                tag_options: {
+                  sizes: 'calc(100vw - 20px)'
+                },
+                url_params: {
+                  h: 100,
+                }
+              },
+              '(max-width: 880px)' => {
+                url_params: {
+                  crop: 'right'
+                },
+                tag_options: {
+                  sizes: 'calc(100vw - 20px - 50%)'
+                }
+              },
+              '(min-width: 881px)' => {
+                url_params: {
+                  crop: 'left',
+                },
+                tag_options: {
+                  sizes: '430px'
+                }
+              }
+            } }
+
+        it 'raises error when no source is supplied' do
+          expect{
+            helper.ix_picture_tag(
+              'bertandernie.jpg',
+              tag_options: tag_options,
+              url_params: url_params,
+              breakpoints: breakpoints,
+            )
+          }.to raise_error(RuntimeError)
+        end
+
+        it "doesn't raise error when source is supplied" do
+          expect{
+            helper.ix_picture_tag(
+              'assets2.imgix.net',
+              'bertandernie.jpg',
+              tag_options: tag_options,
+              url_params: url_params,
+              breakpoints: breakpoints,
+            )
+          }.not_to raise_error
+        end
+      end
+
+      it 'raises error for unknown source' do
+        expect{
+          helper.ix_image_url("foo.bar", "image.jpg")
+        }.to raise_error(RuntimeError)
       end
     end
   end

@@ -4,7 +4,8 @@ require "imgix/rails/image_tag"
 class Imgix::Rails::PictureTag < Imgix::Rails::Tag
   include ActionView::Context
 
-  def initialize(source, tag_options: {}, url_params: {}, breakpoints: {}, widths: [])
+  def initialize(path, source: nil, tag_options: {}, url_params: {}, breakpoints: {}, widths: [])
+    @path = path
     @source = source
     @tag_options = tag_options
     @url_params = url_params
@@ -16,20 +17,19 @@ class Imgix::Rails::PictureTag < Imgix::Rails::Tag
     content_tag(:picture, @tag_options) do
       @breakpoints.each do |media, opts|
         source_tag_opts = opts[:tag_options] || {}
-        source_url_params = opts[:url_params] || {}
+        source_tag_url_params = opts[:url_params] || {}
         widths = opts[:widths]
-        if opts.except(:tag_options, :url_params, :widths).length > 0
-          ActiveSupport::Deprecation.warn('use :tag_options, :url_params, :widths instead.')
-          source_tag_opts = opts.slice!(*self.class.available_parameters).except(:widths)
-          source_url_params = opts.slice(*self.class.available_parameters).except(:widths)
+        unsupported_opts = opts.except(:tag_options, :url_params, :widths)
+        if unsupported_opts.length > 0
+          raise "'#{unsupported_opts.keys.join("', '")}' key(s) not supported; use tag_options, url_params, widths."
         end
 
         source_tag_opts[:media] ||= media
-        source_tag_opts[:srcset] ||= srcset(url_params: @url_params.clone.merge(source_url_params), widths: widths)
+        source_tag_opts[:srcset] ||= srcset(url_params: @url_params.clone.merge(source_tag_url_params), widths: widths)
         concat(content_tag(:source, nil, source_tag_opts))
       end
 
-      concat Imgix::Rails::ImageTag.new(@source, url_params: @url_params).render
+      concat Imgix::Rails::ImageTag.new(@path, source: @source, url_params: @url_params).render
     end
   end
 end

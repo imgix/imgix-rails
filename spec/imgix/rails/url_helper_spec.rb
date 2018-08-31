@@ -26,7 +26,7 @@ describe Imgix::Rails::UrlHelper do
     it 'expects config.imgix.source to be defined' do
       expect{
         url_helper.ix_image_url("assets.png")
-      }.to raise_error(Imgix::Rails::ConfigurationError, "imgix source is not configured. Please set config.imgix[:source].")
+      }.to raise_error(Imgix::Rails::ConfigurationError)
     end
 
     it 'expects config.imgix.source to be a String or an Array' do
@@ -92,52 +92,6 @@ describe Imgix::Rails::UrlHelper do
         end
 
         expect(url_helper.ix_image_url("image.jpg")).to eq  "http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
-      end
-    end
-
-    describe 'hostname removal' do
-      let(:hostname) { 's3.amazonaws.com' }
-      let(:another_hostname) { 's3-us-west-2.amazonaws.com' }
-      let(:yet_another_hostname) { 's3-sa-east-1.amazonaws.com' }
-      let(:app) { Class.new(::Rails::Application) }
-      let(:source) { "assets.imgix.net" }
-
-      before do
-        Imgix::Rails.configure { |config| config.imgix = { source: source } }
-      end
-
-      it 'does not remove a hostname for a fully-qualified URL' do
-        Imgix::Rails.configure do |config|
-          config.imgix = {
-            source: source,
-            hostname_to_replace: hostname
-          }
-        end
-
-        expect(url_helper.ix_image_url("https://adifferenthostname.com/image.jpg", w: 400, h: 300)).to eq "https://assets.imgix.net/https%3A%2F%2Fadifferenthostname.com%2Fimage.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&w=400&h=300"
-      end
-
-      it 'removes a single hostname' do
-        Imgix::Rails.configure do |config|
-          config.imgix = {
-            source: source,
-            hostname_to_replace: hostname
-          }
-        end
-
-        expect(url_helper.ix_image_url("https://#{hostname}/image.jpg", w: 400, h: 300)).to eq "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&w=400&h=300"
-      end
-
-      it 'removes multiple configured protocol/hostname combos' do
-        Imgix::Rails.configure do |config|
-          config.imgix = {
-            source: source,
-            hostnames_to_replace: [another_hostname, yet_another_hostname]
-          }
-        end
-
-        expect(url_helper.ix_image_url("https://#{another_hostname}/image.jpg", w: 400, h: 300)).to eq "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&w=400&h=300"
-        expect(url_helper.ix_image_url("https://#{yet_another_hostname}/image.jpg", w: 400, h: 300)).to eq "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&w=400&h=300"
       end
     end
 
