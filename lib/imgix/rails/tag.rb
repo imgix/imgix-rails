@@ -4,7 +4,8 @@ class Imgix::Rails::Tag
   include Imgix::Rails::UrlHelper
   include ActionView::Helpers
 
-  def initialize(source, tag_options: {}, url_params: {}, widths: [])
+  def initialize(path, source: nil, tag_options: {}, url_params: {}, widths: [])
+    @path = path
     @source = source
     @tag_options = tag_options
     @url_params = url_params
@@ -14,7 +15,6 @@ class Imgix::Rails::Tag
 protected
 
   def srcset(url_params: @url_params, widths: @widths)
-    @source = replace_hostname(@source)
     widths = widths || target_widths
 
     widths.map do |width|
@@ -25,7 +25,7 @@ protected
         srcset_url_params[:h] = (width * (url_params[:h].to_f / url_params[:w])).round
       end
 
-      "#{ix_image_url(@source, srcset_url_params)} #{width}w"
+      "#{ix_image_url(@source, @path, srcset_url_params)} #{width}w"
     end.join(', ')
   end
 
