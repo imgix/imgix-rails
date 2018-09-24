@@ -28,7 +28,7 @@ We recommend using something like [Paperclip](https://github.com/thoughtbot/pape
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'imgix-rails'
+gem 'imgix-rails', github: 'imgix/imgix-rails'
 ```
 
 And then execute:
