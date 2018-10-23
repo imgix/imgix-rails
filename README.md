@@ -94,7 +94,7 @@ The `ix_image_tag` helper method makes it easy to pass parameters to imgix to ha
 
 * `source`: an optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
 * `path`: The path or URL of the image to display.
-* `tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
+* `tag_options`: Any options to apply to the generated `img` element. This is useful for adding class names, etc.
 * `url_params`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
 
 ```erb
