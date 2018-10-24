@@ -95,7 +95,7 @@ The `ix_image_tag` helper method makes it easy to pass parameters to imgix to ha
 * `source`: an optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
 * `path`: The path or URL of the image to display.
 * `tag_options`: Any options to apply to the generated `img` element. This is useful for adding class names, etc.
-* `url_params`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
+* `url_params`: The imgix URL parameters to apply to this image. These will be applied to each URL in the `srcset` attribute, as well as the fallback `src` attribute.
 
 ```erb
 <%= ix_image_tag('/unsplash/hotairballoon.jpg', url_params: { w: 300, h: 500, fit: 'crop', crop: 'right'}, tag_options: { alt: 'A hot air balloon on a sunny day' }) %>
@@ -157,7 +157,7 @@ The `ix_picture_tag` helper method makes it easy to generate `picture` elements 
 * `path`: The path or URL of the image to display.
 * `tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
 * `url_params`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
-* `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of param overrides for that media query. A `source` element will be generated for each breakpoint specified.
+* `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of parameter overrides for that media query. A `source` element will be generated for each breakpoint specified.
 
 ```erb
 <%= ix_picture_tag('bertandernie.jpg',
@@ -222,7 +222,7 @@ The `ix_image_url` helper makes it easy to generate a URL to an image in your Ra
 
 * `source`: an optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
 * `path`: The path or URL of the image to display.
-* `options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
+* `options`: The imgix URL parameters to apply to this image URL.
 
 ```erb
 <%= ix_image_url('/users/1/avatar.png', { w: 400, h: 300 }) %>
