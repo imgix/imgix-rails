@@ -12,8 +12,8 @@ module Imgix
         return Imgix::Rails::ImageTag.new(path, source: source, tag_options: tag_options, url_params: url_params, widths: widths).render
       end
 
-      def ix_picture_tag(source=nil, path, tag_options: {}, url_params: {}, breakpoints:)
-        return Imgix::Rails::PictureTag.new(path, source: source, tag_options: tag_options, url_params: url_params, breakpoints: breakpoints).render
+      def ix_picture_tag(source=nil, path, tag_options: {}, url_params: {}, breakpoints: {}, widths: [])
+        return Imgix::Rails::PictureTag.new(path, source: source, tag_options: tag_options, url_params: url_params, breakpoints: breakpoints, widths: widths).render
       end
     end
   end
