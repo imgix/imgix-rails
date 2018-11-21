@@ -27,8 +27,6 @@ protected
 
       "#{ix_image_url(@source, @path, srcset_url_params)} #{width}w"
     end.join(', ')
-
-    srcsetvalue += ", #{ix_image_url(@source, @path, srcset_url_params.except(:w, :h))}"
   end
 
   @@standard_widths = nil
