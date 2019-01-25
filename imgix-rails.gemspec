@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "imgix", "~> 1.1", ">= 1.1.0"
 
-  spec.add_development_dependency "bundler", ">=1.9", "< 3.0"
+  spec.add_development_dependency "bundler", ">=1.9"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "rspec-rails"
