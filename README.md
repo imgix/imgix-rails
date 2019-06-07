@@ -18,6 +18,7 @@ We recommend using something like [Paperclip](https://github.com/thoughtbot/pape
 * [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
   * [Paperclip and CarrierWave](#paperclip-and-carrierwave)
   * [Refile](#refile)
+  * [Active Storage](#activestorage)
 * [Development](#development)
 * [Contributing](#contributing)
 
