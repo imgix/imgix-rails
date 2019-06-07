@@ -18,6 +18,7 @@ We recommend using something like [Paperclip](https://github.com/thoughtbot/pape
 * [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
   * [Paperclip and CarrierWave](#paperclip-and-carrierwave)
   * [Refile](#refile)
+  * [Active Storage](#activestorage)
 * [Development](#development)
 * [Contributing](#contributing)
 
@@ -303,6 +304,46 @@ end
 <%= ix_refile_image_tag(@blog_post, :hero_photo, {auto: 'format', fit: 'crop', w: 500}) %>
 ```
 
+<a name="activestorage"></a>
+### Active Storage
+
+To set up imgix with ActiveStorage, first ensure that the remote source your ActiveStorage service is pointing to is the same as your imgix source — such as an s3 bucket.
+
+#### config/storage.yml
+```yml
+service: S3
+access_key_id: <%= Rails.application.credentials.dig(:aws, :access_key_id) %>
+secret_access_key: <%= Rails.application.credentials.dig(:aws, :secret_access_key) %>
+region: us-east-1
+bucket: your_own_bucket
+```
+
+Modify your active_storage.service setting depending on what environment you are using. For example, to use Amazon s3 in production, make the following change:
+
+#### config/environments/production.rb
+```ruby
+config.active_storage.service = :amazon
+```
+
+As you would normally with imgix-rails, configure your application to point to your imgix source:
+
+#### config/application.rb
+```ruby
+Rails.application.configure do
+      config.imgix = {
+        source: your_domain,
+        use_https: true,
+        include_library_param: true
+      }
+end
+```
+
+Finally, the two can be used together by passing in the filename of the ActiveStorage blob into the imgix-rails helper function:
+
+#### show.html.erb
+```erb
+<%= ix_image_tag(@your_model.image.key) %>
+```
 
 <a name="development"></a>
 ## Development
