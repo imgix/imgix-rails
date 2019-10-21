@@ -21,10 +21,6 @@ protected
     srcsetvalue = widths.map do |width|
       srcset_url_params[:w] = width
 
-      if url_params[:w].present? && url_params[:h].present?
-        srcset_url_params[:h] = (width * (url_params[:h].to_f / url_params[:w])).round
-      end
-
       "#{ix_image_url(@source, @path, srcset_url_params)} #{width}w"
     end.join(', ')
   end
