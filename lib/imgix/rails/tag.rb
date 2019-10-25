@@ -16,7 +16,8 @@ protected
 
   def srcset(url_params: @url_params, widths: @widths)
     if url_params[:w].present?
-      warn "Warning: srcset generation will be refactored in the next major release to provide greater flexibility and capabilities in serving responsive images. Unfortunately, these changes will require adjustments to logic that can cause unexpected behavior for users who are using this gem in its current state. Please consult this project's documentation when upgrading to better understand the expected behavior."
+      warn "Warning: srcset generation will be refactored in the next major release. "\
+      "Please consult this project\'s documentation when upgrading to better understand the expected behavior."
     end
     widths = widths || target_widths
 
