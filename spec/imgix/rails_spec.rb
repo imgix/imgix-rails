@@ -226,18 +226,6 @@ describe Imgix::Rails do
           expect(Foo.new.get_standard_widths.size).to eq(7)
         end
 
-        it 'correctly calculates `h` to maintain aspect ratio, when specified' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag('presskit/imgix-presskit.pdf', url_params: {page: 3, w: 600, h: 300})).children[0]
-          sources = tag.attribute('srcset').value.split(',')
-          sources.each_with_index do |srcsetPair, i|
-            if i != (sources.size - 1)   # The last element doesn't have w, h
-              w = srcsetPair.match(/w=(\d+)/)[1].to_i
-              h = srcsetPair.match(/h=(\d+)/)[1].to_i
-              expect((w / 2.0).round).to eq(h)
-            end
-          end
-        end
-
         context 'with min_width' do
           let(:tag) do
             Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {min_width: 2560})).children[0]
