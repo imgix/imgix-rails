@@ -47,7 +47,7 @@ describe Imgix::Rails do
 
       expect{
         helper.ix_image_tag("assets.png")
-      }.to raise_error(Imgix::Rails::ConfigurationError, "imgix source must be a String or an Array.")
+      }.to raise_error(Imgix::Rails::ConfigurationError, "imgix source must be a String.")
     end
 
     it 'optionally expects config.imgix.secure_url_token to be defined' do
@@ -105,7 +105,7 @@ describe Imgix::Rails do
       it 'raises error when path not supplied' do
         expect{
           helper.ix_image_url()
-        }.to raise_error
+        }.to raise_error(RuntimeError)
       end
 
 
@@ -364,11 +364,12 @@ describe Imgix::Rails do
   describe 'multi-source' do
     describe 'with default_source specified' do
       let(:app) { Class.new(::Rails::Application) }
-      let(:sources) { { "assets.imgix.net" => nil, "assets2.imgix.net" => nil } }
+      # let(:sources) { { "assets.imgix.net" => nil, "assets.imgix.net" => nil } }
+      let(:source) { "assets.imgix.net" }
       let(:default_source) { "assets.imgix.net" }
 
       before do
-        Imgix::Rails.configure { |config| config.imgix = { sources: sources, default_source: default_source } }
+        Imgix::Rails.configure { |config| config.imgix = { source: source, default_source: default_source } }
       end
 
       describe '#ix_image_url' do
@@ -378,7 +379,7 @@ describe Imgix::Rails do
             end
 
             it 'with explicit source supplied' do
-              expect(helper.ix_image_url("assets2.imgix.net", "image.jpg")).to eq "https://assets2.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
+              expect(helper.ix_image_url("assets.imgix.net", "image.jpg")).to eq "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
             end
         end
 
@@ -392,7 +393,7 @@ describe Imgix::Rails do
           end
 
           it 'with explicit source supplied' do
-            image_url = URI.parse(helper.ix_image_url("assets2.imgix.net", "image.jpg", { h: 300,  w: 400 }))
+            image_url = URI.parse(helper.ix_image_url("assets.imgix.net", "image.jpg", { h: 300,  w: 400 }))
             url_query = CGI::parse(image_url.query)
 
             expect(url_query['w']).to eq ['400']
@@ -400,32 +401,6 @@ describe Imgix::Rails do
           end
         end
 
-        describe 'signs an image path if a :secure_url_token is given' do
-          before do
-            Imgix::Rails.configure do |config|
-              config.imgix = {
-                sources: {
-                  "assets.imgix.net" => "FOO123bar",
-                  "assets2.imgix.net" => "bazbarfoo",
-                },
-                default_source: "assets.imgix.net",
-                include_library_param: false
-              }
-            end
-          end
-
-          it 'with no source supplied' do
-            expect(helper.ix_image_url("/users/1.png")).to eq "https://assets.imgix.net/users/1.png?s=6797c24146142d5b40bde3141fd3600c"
-          end
-
-          it 'with default source explicitly supplied' do
-            expect(helper.ix_image_url("assets.imgix.net", "/users/1.png")).to eq "https://assets.imgix.net/users/1.png?s=6797c24146142d5b40bde3141fd3600c"
-          end
-
-          it 'with different source explicity supplied' do
-            expect(helper.ix_image_url("assets2.imgix.net", "/users/1.png")).to eq "https://assets2.imgix.net/users/1.png?s=07b9d5cf18f35c04f1e1872d9ccfa6ea"
-          end
-        end
       end
 
       describe '#ix_image_tag' do
@@ -437,9 +412,9 @@ describe Imgix::Rails do
           end
 
           it 'with explicit source supplied' do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("assets2.imgix.net", "image.jpg")).children[0]
+            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("assets.imgix.net", "image.jpg")).children[0]
             expect(tag.name).to eq('img')
-            expect(tag.attribute('src').value).to eq("https://assets2.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}")
+            expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}")
           end
         end
 
@@ -450,7 +425,7 @@ describe Imgix::Rails do
           end
 
           it 'with explicit source supplied' do
-            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("assets2.imgix.net", "image.jpg", tag_options: {alt: "No Church in the Wild"}, url_params: {w: 400, h: 300, foo: "bar"})).children[0]
+            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("assets.imgix.net", "image.jpg", tag_options: {alt: "No Church in the Wild"}, url_params: {w: 400, h: 300, foo: "bar"})).children[0]
             expect(tag.attribute('src').value).to include('w=400')
             expect(tag.attribute('src').value).to include('h=300')
             expect(tag.attribute('src').value).to include('foo=bar')
@@ -508,7 +483,7 @@ describe Imgix::Rails do
 
           it 'with explicit source supplied' do
             picture_tag = helper.ix_picture_tag(
-              'assets2.imgix.net',
+              'assets.imgix.net',
               'bertandernie.jpg',
               tag_options: tag_options,
               url_params: url_params,
@@ -516,7 +491,7 @@ describe Imgix::Rails do
             )
             tag = Nokogiri::HTML.fragment(picture_tag).children[0]
             expect(tag.name).to eq('picture')
-            expect(tag.css('img')[0].attribute('src').value).to start_with("https://assets2.imgix.net")
+            expect(tag.css('img')[0].attribute('src').value).to start_with("https://assets.imgix.net")
           end
         end
 
@@ -534,7 +509,7 @@ describe Imgix::Rails do
 
           it 'with explicit source supplied' do
             picture_tag = helper.ix_picture_tag(
-              'assets2.imgix.net',
+              'assets.imgix.net',
               'bertandernie.jpg',
               tag_options: tag_options,
               url_params: url_params,
@@ -573,36 +548,24 @@ describe Imgix::Rails do
 
     describe 'no default_source specified' do
       let(:app) { Class.new(::Rails::Application) }
-      let(:sources) { { "assets.imgix.net" => nil, "assets2.imgix.net" => nil } }
+      let(:source) { "assets.imgix.net" }
 
       before do
-        Imgix::Rails.configure { |config| config.imgix = { sources: sources } }
+        Imgix::Rails.configure { |config| config.imgix = { source: source } }
       end
 
       describe '#ix_image_url' do
-        it 'raises error when no source is supplied' do
-          expect{
-            helper.ix_image_url("image.jpg")
-          }.to raise_error(RuntimeError)
-        end
-
         it "doesn't raise error when source is supplied" do
           expect{
-            helper.ix_image_url("assets2.imgix.net", "image.jpg")
+            helper.ix_image_url("assets.imgix.net", "image.jpg")
           }.not_to raise_error
         end
       end
 
       describe '#ix_image_tag' do
-        it 'raises error when no source is supplied' do
-          expect{
-            helper.ix_image_tag("image.jpg")
-          }.to raise_error(RuntimeError)
-        end
-
         it "doesn't raise error when source is supplied" do
           expect{
-            helper.ix_image_tag("assets2.imgix.net", "image.jpg")
+            helper.ix_image_tag("assets.imgix.net", "image.jpg")
           }.not_to raise_error
         end
       end
@@ -641,21 +604,10 @@ describe Imgix::Rails do
               }
             } }
 
-        it 'raises error when no source is supplied' do
-          expect{
-            helper.ix_picture_tag(
-              'bertandernie.jpg',
-              tag_options: tag_options,
-              url_params: url_params,
-              breakpoints: breakpoints,
-            )
-          }.to raise_error(RuntimeError)
-        end
-
         it "doesn't raise error when source is supplied" do
           expect{
             helper.ix_picture_tag(
-              'assets2.imgix.net',
+              'assets.imgix.net',
               'bertandernie.jpg',
               tag_options: tag_options,
               url_params: url_params,
@@ -670,6 +622,6 @@ describe Imgix::Rails do
           helper.ix_image_url("foo.bar", "image.jpg")
         }.to raise_error(RuntimeError)
       end
-    end
+    end 
   end
 end

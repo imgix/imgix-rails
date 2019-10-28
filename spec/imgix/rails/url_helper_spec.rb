@@ -29,12 +29,12 @@ describe Imgix::Rails::UrlHelper do
       }.to raise_error(Imgix::Rails::ConfigurationError)
     end
 
-    it 'expects config.imgix.source to be a String or an Array' do
+    it 'expects config.imgix.source to be a String' do
       Imgix::Rails.configure { |config| config.imgix = { source: 1 } }
 
       expect{
         url_helper.ix_image_url("assets.png")
-      }.to raise_error(Imgix::Rails::ConfigurationError, "imgix source must be a String or an Array.")
+      }.to raise_error(Imgix::Rails::ConfigurationError, "imgix source must be a String.")
     end
 
     it 'optionally expects config.imgix.secure_url_token to be defined' do
@@ -56,7 +56,7 @@ describe Imgix::Rails::UrlHelper do
           source: source
         }
       end
-
+      
       expect(url_helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
     end
 
@@ -81,47 +81,6 @@ describe Imgix::Rails::UrlHelper do
 
         expect(url_helper.ix_image_url("image.jpg")).to eq  "http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
       end
-    end
-
-    describe 'optionally expects shard_strategy' do
-      it 'optionally expects crc shard_strategy' do
-        Imgix::Rails.configure do |config|
-          config.imgix = {
-            source: 'assets.imgix.net',
-            shard_strategy: :crc
-          }
-        end
-
-        expect{
-          url_helper.ix_image_url("assets.png")
-        }.not_to raise_error
-      end
-
-      it 'optionally expects cycle shard_strategy' do
-        Imgix::Rails.configure do |config|
-          config.imgix = {
-            source: 'assets.imgix.net',
-            shard_strategy: :cycle
-          }
-        end
-
-        expect{
-          url_helper.ix_image_url("assets.png")
-        }.not_to raise_error
-      end
-    end
-
-    it 'expects shard_strategy to be :crc or :cycle' do
-      Imgix::Rails.configure do |config|
-        config.imgix = {
-          source: 'assets.imgix.net',
-          shard_strategy: :foo
-        }
-      end
-
-      expect{
-        url_helper.ix_image_url("assets.png")
-      }.to raise_error(Imgix::Rails::ConfigurationError, "foo is not supported")
     end
   end
 end
