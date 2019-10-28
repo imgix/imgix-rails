@@ -56,7 +56,7 @@ describe Imgix::Rails::UrlHelper do
           source: source
         }
       end
-      
+
       expect(url_helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
     end
 
