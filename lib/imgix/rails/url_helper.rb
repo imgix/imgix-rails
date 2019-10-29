@@ -39,13 +39,19 @@ module Imgix
       def validate_configuration!
         imgix = ::Imgix::Rails.config.imgix
 
-        if imgix.slice(:source).size != 1
-          raise ConfigurationError.new("A :source is required")
+        if imgix.slice(:source, :sources).size != 1
+          raise ConfigurationError.new("Exactly one of :source, :sources is required")
         end
 
         if imgix[:source]
           unless imgix[:source].is_a?(String)
             raise ConfigurationError.new("imgix source must be a String.")
+          end
+        end
+
+        if imgix[:sources]
+          unless imgix[:sources].is_a?(Hash)
+            raise ConfigurationError.new(":sources must be a Hash")
           end
         end
       end
@@ -80,14 +86,10 @@ module Imgix
           opts[:use_https] = imgix[:use_https]
         end
 
-        if imgix.has_key?(:shard_strategy)
-          opts[:shard_strategy] = imgix[:shard_strategy]
-        end
-
-        source = { imgix[:source] => imgix[:secure_url_token] }
+        sources = imgix[:sources] || { imgix[:source] => imgix[:secure_url_token] }
         @imgix_clients = {}
 
-        source.map do |source, token|
+        sources.map do |source, token|
           opts[:host] = source
           opts[:secure_url_token] = token
           @imgix_clients[source] = ::Imgix::Client.new(opts)
