@@ -42,12 +42,40 @@ describe Imgix::Rails do
       }.to raise_error(Imgix::Rails::ConfigurationError)
     end
 
-    it 'expects config.imgix.source to be a String or an Array' do
+    it 'expects config.imgix.source to be a String' do
       Imgix::Rails.configure { |config| config.imgix = { source: 1 } }
 
       expect{
         helper.ix_image_tag("assets.png")
-      }.to raise_error(Imgix::Rails::ConfigurationError, "imgix source must be a String or an Array.")
+      }.to raise_error(Imgix::Rails::ConfigurationError, "imgix source must be a String.")
+    end
+
+    it 'expects either a :source or :sources, but not both' do
+      Imgix::Rails.configure { |config| config.imgix = { source: "domain1", sources: "domain2" } }
+      
+      expect{
+        helper.ix_image_url("assets.png")
+      }.to raise_error(Imgix::Rails::ConfigurationError, "Exactly one of :source, :sources is required")
+    end
+
+    it 'expects :sources to be a hash' do
+      Imgix::Rails.configure { |config| 
+        config.imgix = {
+          sources: 1
+        }
+      }
+
+      expect{
+        helper.ix_image_url("assets.png")
+      }.to raise_error(Imgix::Rails::ConfigurationError, ":sources must be a Hash")
+    end
+
+    it 'validates an imgix domain' do
+      Imgix::Rails.configure { |config| config.imgix = { source: "domain1" } }
+
+      expect{
+        helper.ix_image_url("assets.png")
+      }.to raise_error(ArgumentError)
     end
 
     it 'optionally expects config.imgix.secure_url_token to be defined' do
@@ -105,9 +133,8 @@ describe Imgix::Rails do
       it 'raises error when path not supplied' do
         expect{
           helper.ix_image_url()
-        }.to raise_error
+        }.to raise_error(RuntimeError)
       end
-
 
       it 'signs image URLs with ixlib=rails' do
         image_url = URI.parse(helper.ix_image_url("image.jpg", { h: 300,  w: 400 }))

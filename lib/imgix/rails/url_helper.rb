@@ -44,8 +44,8 @@ module Imgix
         end
 
         if imgix[:source]
-          unless imgix[:source].is_a?(Array) || imgix[:source].is_a?(String)
-            raise ConfigurationError.new("imgix source must be a String or an Array.")
+          unless imgix[:source].is_a?(String)
+            raise ConfigurationError.new("imgix source must be a String.")
           end
         end
 
@@ -53,10 +53,6 @@ module Imgix
           unless imgix[:sources].is_a?(Hash)
             raise ConfigurationError.new(":sources must be a Hash")
           end
-        end
-
-        unless !imgix.key?(:shard_strategy) || STRATEGIES.include?(imgix[:shard_strategy])
-          raise ConfigurationError.new("#{imgix[:shard_strategy]} is not supported")
         end
       end
 
@@ -80,8 +76,6 @@ module Imgix
 
         if imgix[:source].is_a?(String)
           opts[:host] = imgix[:source]
-        else
-          opts[:hosts] = imgix[:source]
         end
 
         if imgix.has_key?(:include_library_param)
@@ -90,10 +84,6 @@ module Imgix
 
         if imgix.has_key?(:use_https)
           opts[:use_https] = imgix[:use_https]
-        end
-
-        if imgix.has_key?(:shard_strategy)
-          opts[:shard_strategy] = imgix[:shard_strategy]
         end
 
         sources = imgix[:sources] || { imgix[:source] => imgix[:secure_url_token] }

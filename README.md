@@ -6,7 +6,7 @@
 
 imgix is a real-time image processing service and CDN. It allows you to manipulate images merely by changing their URL parameters. For a full list of URL parameters, please see the [imgix URL API documentation](https://www.imgix.com/docs/reference).
 
-We recommend using something like [Paperclip](https://github.com/thoughtbot/paperclip), [Refile](https://github.com/refile/refile), [Carrierwave](https://github.com/carrierwaveuploader/carrierwave), or [s3_direct_upload](https://github.com/waynehoover/s3_direct_upload) to handle uploads. After they've been uploaded, you can then serve them using this gem.
+We recommend using something like [Paperclip](https://github.com/thoughtbot/paperclip), [Refile](https://github.com/refile/refile), [Carrierwave](https://github.com/carrierwaveuploader/carrierwave), or [Active Storage](https://github.com/rails/rails/tree/master/activestorage) to handle uploads. After they've been uploaded, you can then serve them using this gem.
 
 * [Installation](#installation)
 * [Usage](#usage)
@@ -61,7 +61,6 @@ The following configuration flags will be respected:
 - `:source` a String or Array that specifies the imgix Source address. Should be in the form of `"assets.imgix.net"`.
 - `:srcset_width_tolerance` an optional numeric value determining the maximum tolerance allowable, between the downloaded dimensions and rendered dimensions of the image (default `.08` i.e. `8%`).
 - `:secure_url_token` an optional secure URL token found in your dashboard (https://dashboard.imgix.com) used for signing requests
-- `:shard_strategy` Specify [domain sharding strategy](https://github.com/imgix/imgix-rb#domain-sharded-urls) with multiple sources. Acceptable values are `:cycle` and `:crc`. `:crc` is used by default.
 
 #### Multi-source configuration
 
