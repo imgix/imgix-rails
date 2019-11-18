@@ -1,5 +1,6 @@
 require "imgix/rails/tag"
 require "imgix/rails/image_tag"
+require "action_view"
 
 class Imgix::Rails::PictureTag < Imgix::Rails::Tag
   include ActionView::Context

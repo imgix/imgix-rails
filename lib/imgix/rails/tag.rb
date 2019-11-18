@@ -1,4 +1,5 @@
 require "imgix/rails/url_helper"
+require "action_view"
 
 class Imgix::Rails::Tag
   include Imgix::Rails::UrlHelper
