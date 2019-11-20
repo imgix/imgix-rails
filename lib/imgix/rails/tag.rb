@@ -9,67 +9,18 @@ class Imgix::Rails::Tag
     @source = source
     @tag_options = tag_options
     @url_params = url_params
-    @widths = widths.length > 0 ? widths : target_widths
+    @widths = widths
   end
 
 protected
 
-  def srcset(url_params: @url_params, widths: @widths)
-    widths = widths || target_widths
-
-    srcset_url_params = url_params.clone
-    srcsetvalue = widths.map do |width|
-      srcset_url_params[:w] = width
-
-      "#{ix_image_url(@source, @path, srcset_url_params)} #{width}w"
-    end.join(', ')
-  end
-
-  @@standard_widths = nil
-
-  def compute_standard_widths
-    tolerance = ::Imgix::Rails.config.imgix[:srcset_width_tolerance] || SRCSET_TOLERANCE
-    prev = MINIMUM_SCREEN_WIDTH
-    widths = []
-    while prev <= MAXIMUM_SCREEN_WIDTH do
-      widths.append(2 * (prev/2).round)   # Ensure widths are even
-      prev = prev * (1 + tolerance*2.0)
-    end
-
-    widths
-  end
-
-  def standard_widths
-    return @@standard_widths if @@standard_widths
-
-    @@standard_widths = compute_standard_widths
-    @@standard_widths.freeze
-
-    @@standard_widths
-  end
-
-private
-
-  MINIMUM_SCREEN_WIDTH = 100
-  MAXIMUM_SCREEN_WIDTH = 8192   # Maximum width supported by imgix
-  SRCSET_TOLERANCE = 0.08
-
-  # Return the widths to generate given the input `sizes`
-  # attribute.
-  #
-  # @return {Array} An array of {Fixnum} instances representing the unique `srcset` URLs to generate.
-  def target_widths
+  def srcset(source: @source, path: @path, url_params: @url_params, widths: @widths, tag_options: @tag_options)
+    params = url_params.clone
+    width_tolerance = ::Imgix::Rails.config.imgix[:srcset_width_tolerance]
     min_width = @tag_options[:min_width]
     max_width = @tag_options[:max_width]
-    if min_width || max_width
-      min_width = min_width || MINIMUM_SCREEN_WIDTH
-      max_width = max_width || MAXIMUM_SCREEN_WIDTH
-      widths = standard_widths.select { |w| min_width <= w && w <= max_width }
-    else
-      widths = standard_widths
-    end
+    options = { widths: @widths, width_tolerance: width_tolerance, min_width: min_width, max_width: max_width}
 
-    widths
+    ix_image_srcset(@source, @path, params, options)
   end
-
 end

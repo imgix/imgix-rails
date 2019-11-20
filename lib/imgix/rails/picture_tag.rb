@@ -10,7 +10,7 @@ class Imgix::Rails::PictureTag < Imgix::Rails::Tag
     @tag_options = tag_options
     @url_params = url_params
     @breakpoints = breakpoints
-    @widths = widths.length > 0 ? widths : target_widths
+    @widths = widths.length > 0 ? widths : []
   end
 
   def render
