@@ -10,28 +10,65 @@ module Imgix
         when 1
           path = args[0]
           source = nil
-          options = {}
+          params = {}
         when 2
           if args[0].is_a?(String) && args[1].is_a?(Hash)
             source = nil
             path = args[0]
-            options = args[1]
+            params = args[1]
           elsif args[0].is_a?(String) && args[1].is_a?(String)
             source = args[0]
             path = args[1]
-            options = {}
+            params = {}
           else
-            raise RuntimeError.new("path and source must be of type String; options must be of type Hash")
+            raise RuntimeError.new("path and source must be of type String; params must be of type Hash")
           end
         when 3
           source = args[0]
           path = args[1]
-          options = args[2]
+          params = args[2]
         else
           raise RuntimeError.new('path missing')
         end
 
-        imgix_client(source).path(path).to_url(options).html_safe
+        imgix_client(source).path(path).to_url(params).html_safe
+      end
+
+      protected
+
+      def ix_image_srcset(*args)
+        validate_configuration!
+
+        case args.size
+        when 1
+          path = args[0]
+          source = nil
+          params = {}
+        when 2
+          if args[0].is_a?(String) && args[1].is_a?(Hash)
+            source = nil
+            path = args[0]
+            params = args[1]
+          elsif args[0].is_a?(String) && args[1].is_a?(String)
+            source = args[0]
+            path = args[1]
+            params = {}
+          else
+            raise RuntimeError.new("path and source must be of type String; params must be of type Hash")
+          end
+        when 3
+          source = args[0]
+          path = args[1]
+          params = args[2]
+        when 4
+          source = args[0]
+          path = args[1]
+          params = args[2]
+          options = args[3]
+        else
+          raise RuntimeError.new('path missing')
+        end
+        imgix_client(source).path(path).to_srcset(options: options, **params).html_safe
       end
 
       private
