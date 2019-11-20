@@ -180,10 +180,12 @@ describe Imgix::Rails do
       end
 
       it 'allows explicitly specifying desired widths' do
-        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
-        expect(tag.attribute('srcset').value).to include('10w')
-        expect(tag.attribute('srcset').value).to include('20w')
-        expect(tag.attribute('srcset').value).to include('30w')
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', url_params: {w: 400, h: 300})).children[0]
+        expect(tag.attribute('srcset').value).to include('1x')
+        expect(tag.attribute('srcset').value).to include('2x')
+        expect(tag.attribute('srcset').value).to include('3x')
+        expect(tag.attribute('srcset').value).to include('4x')
+        expect(tag.attribute('srcset').value).to include('5x')
       end
 
       it 'does not include `widths` as an attribute in the generated tag' do
@@ -230,7 +232,7 @@ describe Imgix::Rails do
 
         it 'generates the expected number of srcset values' do
           tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
-          expect(tag.attribute('srcset').value.split(',').size).to eq(30)
+          expect(tag.attribute('srcset').value.split(',').size).to eq(31)
         end
 
         it 'generates the excpected number of srcset values with custom srcset-width-tolerance' do
@@ -241,16 +243,9 @@ describe Imgix::Rails do
             }
           end
 
-          class Foo < Imgix::Rails::Tag
-            def initialize
-            end
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
 
-            def get_standard_widths
-              compute_standard_widths
-            end
-          end
-
-          expect(Foo.new.get_standard_widths.size).to eq(7)
+          expect(tag.attribute('srcset').value.split(',').size).to eq(8)
         end
 
         context 'with min_width' do
@@ -259,7 +254,7 @@ describe Imgix::Rails do
           end
 
           it 'generates the expected number of srcset values' do
-            expect(tag.attribute('srcset').value.split(',').size).to eq(8)
+            expect(tag.attribute('srcset').value.split(',').size).to eq(9)
           end
         end
 
@@ -269,6 +264,7 @@ describe Imgix::Rails do
           end
 
           it 'generates the expected number of srcset values' do
+            puts tag
             expect(tag.attribute('srcset').value.split(',').size).to eq(1)
           end
         end
