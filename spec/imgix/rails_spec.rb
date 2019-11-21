@@ -421,6 +421,156 @@ describe Imgix::Rails do
           )
         }.to raise_error(RuntimeError, /key\(s\) not supported/)
       end
+
+      context 'with srcset_options' do
+
+        it 'allows variable qualities to be disabled' do
+          picture_tag = helper.ix_picture_tag(
+            'bertandernie.jpg',
+            tag_options: {
+            },
+            url_params: {
+              w:1000
+            },
+            srcset_options: {
+              disable_variable_quality: true
+            },
+            breakpoints: {
+              '(max-width: 640px)' => {
+                tag_options: {
+                  sizes: 'calc(100vw - 20px)'
+                },
+                url_params: {
+                  h: 100,
+                }
+              }
+            }
+          )
+          tag = Nokogiri::HTML.fragment(picture_tag).children[0]
+
+          expect(tag.children[1].attribute('srcset').value).not_to include('q=75')
+          expect(tag.children[1].attribute('srcset').value).not_to include('q=50')
+          expect(tag.children[1].attribute('srcset').value).not_to include('q=35')
+          expect(tag.children[1].attribute('srcset').value).not_to include('q=23')
+          expect(tag.children[1].attribute('srcset').value).not_to include('q=20')
+        end
+
+        context 'min_width' do
+          let(:tag) do
+            picture_tag = helper.ix_picture_tag(
+              'bertandernie.jpg',
+              tag_options: {
+              },
+              url_params: {
+              },
+              srcset_options: {
+                min_width: 6000
+              },
+              breakpoints: {
+                '(max-width: 640px)' => {
+                  tag_options: {
+                    sizes: 'calc(100vw - 20px)'
+                  },
+                  url_params: {
+                    h: 100,
+                  }
+                }
+              }
+            )
+    
+            Nokogiri::HTML.fragment(picture_tag).children[0]
+          end
+
+          it 'generates the expected number of srcset values' do
+            expect(tag.children[1].attribute('srcset').value.split(',').size).to eq(4)
+          end
+
+          it 'does not include min_width as an attribute' do
+            expect(tag.children[1].attribute('min_width')).to be_nil
+          end
+        end
+
+        context 'max_width' do
+          let(:tag) do
+            picture_tag = helper.ix_picture_tag(
+              'bertandernie.jpg',
+              tag_options: {
+              },
+              url_params: {
+              },
+              srcset_options: {
+                max_width: 1000
+              },
+              breakpoints: {
+                '(max-width: 640px)' => {
+                  tag_options: {
+                    sizes: 'calc(100vw - 20px)'
+                  },
+                  url_params: {
+                    h: 100,
+                  }
+                }
+              }
+            )
+    
+            Nokogiri::HTML.fragment(picture_tag).children[0]
+          end
+
+          it 'generates the expected number of srcset values' do
+            expect(tag.children[1].attribute('srcset').value.split(',').size).to eq(17)
+          end
+
+          it 'does not include max_width as an attribute' do
+            expect(tag.children[1].attribute('max_width')).to be_nil
+          end
+        end
+
+        context 'widths' do
+          let(:tag) do
+            picture_tag = helper.ix_picture_tag(
+              'bertandernie.jpg',
+              tag_options: {
+              },
+              url_params: {
+              },
+              srcset_options: {
+                widths:[100,500,800,1200]
+              },
+              breakpoints: {
+                '(max-width: 640px)' => {
+                  tag_options: {
+                    sizes: 'calc(100vw - 20px)'
+                  },
+                  url_params: {
+                    h: 100,
+                  }
+                }
+              }
+            )
+    
+            Nokogiri::HTML.fragment(picture_tag).children[0]
+          end
+
+          it 'allows explicitly specifying desired widths' do
+            expect(tag.children[1].attribute('srcset').value).to include('100w')
+            expect(tag.children[1].attribute('srcset').value).to include('500w')
+            expect(tag.children[1].attribute('srcset').value).to include('800w')
+            expect(tag.children[1].attribute('srcset').value).to include('1200w')
+          end
+
+          it 'does not include `widths` as an attribute in the generated tag' do
+            expect(tag.children[1].attribute('widths')).to be_nil
+          end
+
+          it 'does not include `widths` as a query parameter in the generated `srcset`' do
+            expect(tag.children[1].attribute('srcset').value).not_to include('widths')
+          end
+
+          it 'does not include `widths` as a query parameter in the generated `src`' do
+            expect(tag.children[1].attribute('src').value).not_to include('widths')
+          end
+        end
+      end
     end
   end
 
