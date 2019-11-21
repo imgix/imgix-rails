@@ -179,30 +179,6 @@ describe Imgix::Rails do
         expect(tag.attribute('src').value).to include('foo=bar')
       end
 
-      it 'allows explicitly specifying desired widths' do
-        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', url_params: {w: 400, h: 300})).children[0]
-        expect(tag.attribute('srcset').value).to include('1x')
-        expect(tag.attribute('srcset').value).to include('2x')
-        expect(tag.attribute('srcset').value).to include('3x')
-        expect(tag.attribute('srcset').value).to include('4x')
-        expect(tag.attribute('srcset').value).to include('5x')
-      end
-
-      it 'does not include `widths` as an attribute in the generated tag' do
-        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
-        expect(tag.attribute('widths')).to be_nil
-      end
-
-      it 'does not include `widths` as a query parameter in the generated `srcset`' do
-        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
-        expect(tag.attribute('srcset').value).not_to include('widths')
-      end
-
-      it 'does not include `widths` as a query parameter in the generated `src`' do
-        tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', widths: [10, 20, 30], url_params: {w: 400, h: 300})).children[0]
-        expect(tag.attribute('src').value).not_to include('widths')
-      end
-
       it 'applies the client-hints parameter' do
         tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", url_params: {ch: "Width,DPR"})).children[0]
         expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}&ch=Width%2CDPR")
@@ -248,24 +224,88 @@ describe Imgix::Rails do
           expect(tag.attribute('srcset').value.split(',').size).to eq(8)
         end
 
-        context 'with min_width' do
-          let(:tag) do
-            Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {min_width: 2560})).children[0]
+        context 'with fixed-image rendering' do
+          it 'generates a DPR srcset' do
+            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", url_params: {w: 1000})).children[0]
+            expect(tag.attribute('srcset').value).to include('1x')
+            expect(tag.attribute('srcset').value).to include('2x')
+            expect(tag.attribute('srcset').value).to include('3x')
+            expect(tag.attribute('srcset').value).to include('4x')
+            expect(tag.attribute('srcset').value).to include('5x')
           end
 
-          it 'generates the expected number of srcset values' do
-            expect(tag.attribute('srcset').value.split(',').size).to eq(9)
+          it 'includes variable qualities per each entry' do
+            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", url_params: {w: 1000})).children[0]
+            expect(tag.attribute('srcset').value).to include('q=75')
+            expect(tag.attribute('srcset').value).to include('q=50')
+            expect(tag.attribute('srcset').value).to include('q=35')
+            expect(tag.attribute('srcset').value).to include('q=23')
+            expect(tag.attribute('srcset').value).to include('q=20')
           end
         end
 
-        context 'with max_width' do
-          let(:tag) do
-            Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", tag_options: {max_width: 100})).children[0]
+        context 'with srcset_options' do
+          it 'allows variable qualities to be disabled' do
+            tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", url_params: {w: 1000}, srcset_options:{disable_variable_quality: true})).children[0]
+            expect(tag.attribute('srcset').value).not_to include('q=75')
+            expect(tag.attribute('srcset').value).not_to include('q=50')
+            expect(tag.attribute('srcset').value).not_to include('q=35')
+            expect(tag.attribute('srcset').value).not_to include('q=23')
+            expect(tag.attribute('srcset').value).not_to include('q=20')
           end
 
-          it 'generates the expected number of srcset values' do
-            puts tag
-            expect(tag.attribute('srcset').value.split(',').size).to eq(1)
+          context 'min_width' do
+            let(:tag) do
+              Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", srcset_options: {min_width: 2560})).children[0]
+            end
+
+            it 'generates the expected number of srcset values' do
+              expect(tag.attribute('srcset').value.split(',').size).to eq(9)
+            end
+
+            it 'does not include min_width as an attribute' do
+              expect(tag.attribute('min_width')).to be_nil
+            end
+          end
+
+          context 'max_width' do
+            let(:tag) do
+              Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", srcset_options: {max_width: 100})).children[0]
+            end
+
+            it 'generates the expected number of srcset values' do
+              expect(tag.attribute('srcset').value.split(',').size).to eq(1)
+            end
+
+            it 'does not include max_width as an attribute' do
+              expect(tag.attribute('max_width')).to be_nil
+            end
+          end
+
+          context 'widths' do
+            it 'allows explicitly specifying desired widths' do
+              tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', url_params: {w: 400, h: 300})).children[0]
+              expect(tag.attribute('srcset').value).to include('1x')
+              expect(tag.attribute('srcset').value).to include('2x')
+              expect(tag.attribute('srcset').value).to include('3x')
+              expect(tag.attribute('srcset').value).to include('4x')
+              expect(tag.attribute('srcset').value).to include('5x')
+            end
+
+            it 'does not include `widths` as an attribute in the generated tag' do
+              tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', srcset_options: {widths: [10, 20, 30]}, url_params: {w: 400, h: 300})).children[0]
+              expect(tag.attribute('widths')).to be_nil
+            end
+
+            it 'does not include `widths` as a query parameter in the generated `srcset`' do
+              tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', srcset_options: {widths: [10, 20, 30]}, url_params: {w: 400, h: 300})).children[0]
+              expect(tag.attribute('srcset').value).not_to include('widths')
+            end
+
+            it 'does not include `widths` as a query parameter in the generated `src`' do
+              tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', srcset_options: {widths: [10, 20, 30]}, url_params: {w: 400, h: 300})).children[0]
+              expect(tag.attribute('src').value).not_to include('widths')
+            end
           end
         end
       end
