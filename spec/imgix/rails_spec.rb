@@ -284,12 +284,11 @@ describe Imgix::Rails do
 
           context 'widths' do
             it 'allows explicitly specifying desired widths' do
-              tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', url_params: {w: 400, h: 300})).children[0]
-              expect(tag.attribute('srcset').value).to include('1x')
-              expect(tag.attribute('srcset').value).to include('2x')
-              expect(tag.attribute('srcset').value).to include('3x')
-              expect(tag.attribute('srcset').value).to include('4x')
-              expect(tag.attribute('srcset').value).to include('5x')
+              tag = Nokogiri::HTML.fragment(helper.ix_image_tag('image.jpg', srcset_options: {widths: [100, 500, 800, 1200]})).children[0]
+              expect(tag.attribute('srcset').value).to include('100w')
+              expect(tag.attribute('srcset').value).to include('500w')
+              expect(tag.attribute('srcset').value).to include('800w')
+              expect(tag.attribute('srcset').value).to include('1200w')
             end
 
             it 'does not include `widths` as an attribute in the generated tag' do

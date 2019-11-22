@@ -57,17 +57,17 @@ end
 
 The following configuration flags will be respected:
 
-- `:use_https` toggles the use of HTTPS. Defaults to `true`
-- `:source` a String or Array that specifies the imgix Source address. Should be in the form of `"assets.imgix.net"`.
-- `:srcset_width_tolerance` an optional numeric value determining the maximum tolerance allowable, between the downloaded dimensions and rendered dimensions of the image (default `0.08` i.e. `8%`).
-- `:secure_url_token` an optional secure URL token found in your dashboard (https://dashboard.imgix.com) used for signing requests
+- `use_https`: toggles the use of HTTPS. Defaults to `true`
+- `source`: a String or Array that specifies the imgix Source address. Should be in the form of `"assets.imgix.net"`.
+- `srcset_width_tolerance`: an optional numeric value determining the maximum tolerance allowable, between the downloaded dimensions and rendered dimensions of the image (default `0.08` i.e. `8%`).
+- `secure_url_token`: an optional secure URL token found in your dashboard (https://dashboard.imgix.com) used for signing requests
 
 #### Multi-source configuration
 
 In addition to the standard configuration flags, the following options can be used for multi-source support.
 
-- `:sources` a Hash of imgix source-secure_url_token key-value pairs. If the value for a source is `nil`, URLs generated for the corresponding source won't be secured. `:sources` and `:source` *cannot* be used together.
-- `:default_source` optionally specify a default source for generating URLs.
+- `sources`: a Hash of imgix source-secure_url_token key-value pairs. If the value for a source is `nil`, URLs generated for the corresponding source won't be secured. `sources` and `source` *cannot* be used together.
+- `default_source`: optionally specify a default source for generating URLs.
 
 Example:
 
@@ -86,21 +86,20 @@ end
 <a name="ix_image_tag"></a>
 ### ix_image_tag
 
-The `ix_image_tag` helper method makes it easy to pass parameters to imgix to handle resizing, cropping, etc. It also simplifies adding responsive imagery to your Rails app by automatically generating a `srcset` based on the parameters you pass. We talk a bit about using the `srcset` attribute in an application in the following blog post: [“Responsive Images with `srcset` and imgix.”](https://docs.imgix.com/tutorials/responsive-images-srcset-imgix?_ga=utm_medium=referral&utm_source=sdk&utm_campaign=<lib>-readme).
+The `ix_image_tag` helper method makes it easy to pass parameters to imgix to handle resizing, cropping, etc. It also simplifies adding responsive imagery to your Rails app by automatically generating a `srcset` based on the parameters you pass. We talk a bit about using the `srcset` attribute in an application in the following blog post: [“Responsive Images with `srcset` and imgix.”](https://docs.imgix.com/tutorials/responsive-images-srcset-imgix?_ga=utm_medium=referral&utm_source=sdk&utm_campaign=rails-readme).
 
-`ix_image_tag` generates `<img>` tags with a filled-out `srcset` attribute that leans on [imgix-rb](https://github.com/imgix/imgix-rb#fixed-image-rendering) to do the hard work. It also makes a variety of options available for customizing how the `srcset` is generated. For example, if you already know the minimum or maximum number of physical pixels that this image will need to be displayed at, you can pass the `min_width` and/or `max_width` options. This will result in a smaller, more tailored `srcset`.
+`ix_image_tag` generates `<img>` tags with a filled-out `srcset` attribute that leans on [imgix-rb](https://github.com/imgix/imgix-rb) to do the hard work. It also makes a variety of options available for customizing how the `srcset` is generated. For example, if you already know the minimum or maximum number of physical pixels that this image will need to be displayed at, you can pass the `min_width` and/or `max_width` options. This will result in a smaller, more tailored `srcset`.
 
 `ix_image_tag` takes the following arguments:
 
 * `source`: An optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
 * `path`: The path or URL of the image to display.
-* `tag_options`: Any options to apply to the generated `img` element. This is useful for adding class names, alt tags, etc.
+* `tag_options`: HTML attributes to apply to the generated `img` element. This is useful for adding class names, alt tags, etc.
 * `url_params`: The imgix URL parameters to apply to this image. These will be applied to each URL in the `srcset` attribute, as well as the fallback `src` attribute.
 * `srcset_options`: A variety of options that allow for fine tuning `srcset` generation. More information on each of these modifiers can be found in the [imgix-rb documentation](https://github.com/imgix/imgix-rb#srcset-generation). Any of the following can be passed as arguments:
-  
   * [`widths`](https://github.com/imgix/imgix-rb#custom-widths): An array of exact widths that `srcset` pairs will be generated with.
-  * [`min_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The minimum width that `srcset` pairs will be generated with.
-  * [`max_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The maximum width that `srcset` pairs will be generated with.
+  * [`min_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The minimum width that `srcset` pairs will be generated with. Will be ignored if `widths` are provided.
+  * [`max_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The maximum width that `srcset` pairs will be generated with. Will be ignored if `widths` are provided.
   * [`disable_variable_quality`](https://github.com/imgix/imgix-rb#variable-qualities): Pass `true` to disable variable quality parameters when generating a `srcset` ([fixed-images only](https://github.com/imgix/imgix-rails#fixed-image-rendering)). In addition, imgix-rails will respect an overriding `q` (quality) parameter if one is provided through `url_params`.
 
 ```erb
@@ -148,14 +147,14 @@ Then rendering the portrait in your application is very easy:
 If you already know all the exact widths you need images for, you can specify that by passing the `widths` option as an array. In this case, imgix-rails will only generate `srcset` pairs for the specified `widths`.
 
 ```erb
-<%= ix_image_tag('/unsplash/hotairballoon.jpg', srcset_options: { widths: [320, 640, 960, 1280] }, url_params: { w: 300, h: 500, fit: 'crop', crop: 'right'}, tag_options: { alt: 'A hot air balloon on a sunny day' }) %>
+<%= ix_image_tag('/unsplash/hotairballoon.jpg', srcset_options: { widths: [320, 640, 960, 1280] }, tag_options: { alt: 'A hot air balloon on a sunny day' }) %>
 ```
 
 #### Fixed image rendering
 
 In cases where enough information is provided about an image's dimensions, `ix_image_tag` will instead build a `srcset` that will allow for an image to be served at different resolutions. The parameters taken into consideration when determining if an image is fixed-width are `w`, `h`, and `ar`. By invoking `ix_image_tag` with either a width or the height and aspect ratio (along with `fit=crop`, typically) provided, a different srcset will be generated for a fixed-size image instead.
 
-```rb
+```erb
 <%= ix_image_tag('/unsplash/hotairballoon.jpg', url_params: {w: 1000}) %>
 ```
 
@@ -168,6 +167,8 @@ https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=3&amp;q=
 https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=4&amp;q=23 4x,
 https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=20 5x" sizes="100vw" src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000">
 ```
+
+Fixed image rendering will automatically append a variable `q` parameter mapped to each `dpr` parameter when generating a `srcset`. This technique is commonly used to compensate for the increased filesize of high-DPR images. Since high-DPR images are displayed at a higher pixel density on devices, image quality can be lowered to reduce overall filesize without sacrificing perceived visual quality. For more information and examples of this technique in action, see [this blog post](https://blog.imgix.com/2016/03/30/dpr-quality?_ga=utm_medium=referral&utm_source=sdk&utm_campaign=rails-readme). This behavior will respect any overriding `q` value passed in via `url_params` and can be disabled altogether with `srcset_options: { disable_variable_quality: true }`.
 
 <a name="ix_picture_tag"></a>
 ### ix_picture_tag
@@ -182,7 +183,6 @@ The `ix_picture_tag` helper method makes it easy to generate `picture` elements 
 * `url_params`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
 * `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of parameter overrides for that media query. A `source` element will be generated for each breakpoint specified.
 * `srcset_options`: A variety of options that allow for fine tuning `srcset` generation. More information on each of these modifiers can be found in the [imgix-rb documentation](https://github.com/imgix/imgix-rb#srcset-generation). Any of the following can be passed as arguments:
-  
   * [`widths`](https://github.com/imgix/imgix-rb#custom-widths): An array of exact widths that `srcset` pairs will be generated with.
   * [`min_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The minimum width that `srcset` pairs will be generated with.
   * [`max_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The maximum width that `srcset` pairs will be generated with.
