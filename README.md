@@ -184,8 +184,8 @@ The `ix_picture_tag` helper method makes it easy to generate `picture` elements 
 * `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of parameter overrides for that media query. A `source` element will be generated for each breakpoint specified.
 * `srcset_options`: A variety of options that allow for fine tuning `srcset` generation. More information on each of these modifiers can be found in the [imgix-rb documentation](https://github.com/imgix/imgix-rb#srcset-generation). Any of the following can be passed as arguments:
   * [`widths`](https://github.com/imgix/imgix-rb#custom-widths): An array of exact widths that `srcset` pairs will be generated with.
-  * [`min_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The minimum width that `srcset` pairs will be generated with.
-  * [`max_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The maximum width that `srcset` pairs will be generated with.
+  * [`min_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The minimum width that `srcset` pairs will be generated with. Will be ignored if `widths` are provided.
+  * [`max_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The maximum width that `srcset` pairs will be generated with. Will be ignored if `widths` are provided.
   * [`disable_variable_quality`](https://github.com/imgix/imgix-rb#variable-qualities): Pass `true` to disable variable quality parameters when generating a `srcset` ([fixed-images only](https://github.com/imgix/imgix-rails#fixed-image-rendering)). In addition, imgix-rails will respect an overriding `q` (quality) parameter if one is provided through `url_params`.
 
 ```erb
