@@ -373,6 +373,23 @@ Finally, the two can be used together by passing in the filename of the ActiveSt
 <%= ix_image_tag(@your_model.image.key) %>
 ```
 
+<a name="upgrade-guide"></a>
+## Upgrade Guides
+
+### 3.x to 4.0
+
+The v4.0.0 release of imgix-rails introduces a variety of improvements relating to how this gem handles and generates `srcset` attributes. However, in releasing this version there are some significant interface/behavioral changes that users need to be aware of. Users should note that the `min_width` and `max_width` fields (passed via `tag_options`), as well as the `widths` field, have all been moved to their own encompassing `srcset_options` field. This is done with the intention of providing a more organized and intuitive experience when fine-tuning how `srcset` width pairs are generated. See the following example demonstrating this new pattern:
+
+```erb
+<%= ix_image_tag('/unsplash/hotairballoon.jpg',
+  srcset_options: { min_width: 1000, max_width: 2500},
+  tag_options: { alt: 'A hot air balloon on a sunny day' }) %>
+```
+
+For users migrating to version 4.0 or later, it is important that all srcset-related modifiers be passed via `srcset_options`, as doing so through `tag_options` or `widths` directly will result in errors. For more details on these modifiers, please see the [ix_image_tag](https://github.com/imgix/imgix-rails#ix_image_tag) or [ix_picture_tag](https://github.com/imgix/imgix-rails#ix_picture_tag) sections.
+
+In addition to these changes, imgix-rails is now capable of producing [fixed-image srcsets](https://github.com/imgix/imgix-rb#fixed-image-rendering). Users should note that when certain dimension information is provided, imgix-rails will produce a `srcset` at different screen resolutions, rather than the typical width pairs. This feature provides expanded functionality to cover more `srcset` use cases that users can take advantage of. We are always happy to provide our users with more tools to assist them in their efforts to build out responsive images on the web.
+
 <a name="development"></a>
 ## Development
 
