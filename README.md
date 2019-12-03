@@ -19,6 +19,7 @@ We recommend using something like [Paperclip](https://github.com/thoughtbot/pape
   * [Paperclip and CarrierWave](#paperclip-and-carrierwave)
   * [Refile](#refile)
   * [Active Storage](#activestorage)
+* [Upgrade Guides](#upgrade-guides)
 * [Development](#development)
 * [Contributing](#contributing)
 
@@ -373,7 +374,7 @@ Finally, the two can be used together by passing in the filename of the ActiveSt
 <%= ix_image_tag(@your_model.image.key) %>
 ```
 
-<a name="upgrade-guide"></a>
+<a name="upgrade-guides"></a>
 ## Upgrade Guides
 
 ### 3.x to 4.0
@@ -388,7 +389,7 @@ The v4.0.0 release of imgix-rails introduces a variety of improvements relating 
 
 For users migrating to version 4.0 or later, it is important that all srcset-related modifiers be passed via `srcset_options`, as doing so through `tag_options` or `widths` directly will result in errors. For more details on these modifiers, please see the [ix_image_tag](https://github.com/imgix/imgix-rails#ix_image_tag) or [ix_picture_tag](https://github.com/imgix/imgix-rails#ix_picture_tag) sections.
 
-In addition to these changes, imgix-rails is now capable of producing [fixed-image srcsets](https://github.com/imgix/imgix-rb#fixed-image-rendering). Users should note that when certain dimension information is provided, imgix-rails will produce a `srcset` at different screen resolutions, rather than the typical width pairs. This feature provides expanded functionality to cover more `srcset` use cases that users can take advantage of. We are always happy to provide our users with more tools to assist them in their efforts to build out responsive images on the web.
+In addition to these changes, imgix-rails is now capable of producing [fixed-image srcsets](https://github.com/imgix/imgix-rb#fixed-image-rendering). Users should note that when certain dimension information is provided, imgix-rails will produce a `srcset` at different screen resolutions rather than the typical width pairs. This feature provides expanded functionality to cover more `srcset` use cases that users can take advantage of. We are always happy to provide our users with more tools to assist them in their efforts to build out responsive images on the web.
 
 <a name="development"></a>
 ## Development
