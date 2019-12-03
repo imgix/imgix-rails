@@ -14,6 +14,12 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Makes integrating imgix into your Rails app easier. It builds on imgix-rb to offer a few Rails-specific interfaces. Please see https://github.com/imgix/imgix-rails for more details.}
   spec.homepage      = "https://github.com/imgix/imgix-rails"
 
+  spec.metadata = {
+    'bug_tracker_uri'   => 'https://github.com/imgix/imgix-rails/issues',
+    'changelog_uri'     => 'https://github.com/imgix/imgix-rails/blob/master/CHANGELOG.md',
+    'documentation_uri' => "https://www.rubydoc.info/gems/imgix-rails/#{spec.version}",
+    'source_code_uri'   => "https://github.com/imgix/imgix-rails/tree/v#{spec.version}"
+  }
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
   if spec.respond_to?(:metadata)
