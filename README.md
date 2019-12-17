@@ -1,12 +1,15 @@
-[![imgix logo](https://assets.imgix.net/imgix-logo-web-2014.pdf?page=2&fm=png&w=200&h=200)](https://imgix.com)
+<!-- ix-docs-ignore -->
+![imgix logo](https://assets.imgix.net/sdk-imgix-logo.svg)
 
-# imgix-rails [![Build Status](https://travis-ci.org/imgix/imgix-rails.svg?branch=master)](https://travis-ci.org/imgix/imgix-rails)
+`imgix-rails` is a gem designed to make integrating [imgix](https://www.imgix.com/) into your Rails app easier. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces.
 
-`imgix-rails` is a gem designed to make integrating imgix into your Rails app easier. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces.
+[![Gem Version](https://badge.fury.io/rb/imgix-rails.svg)](https://rubygems.org/gems/imgix-rails)
+[![Build Status](https://travis-ci.org/imgix/imgix-rails.svg?branch=master)](https://travis-ci.org/imgix/imgix-rails)
+![Downloads](https://img.shields.io/gem/dt/imgix-rails)
+[![License](https://img.shields.io/github/license/imgix/imgix-rails)](https://github.com/imgix/imgix-rails/blob/master/LICENSE)
 
-imgix is a real-time image processing service and CDN. It allows you to manipulate images merely by changing their URL parameters. For a full list of URL parameters, please see the [imgix URL API documentation](https://www.imgix.com/docs/reference).
-
-We recommend using something like [Paperclip](https://github.com/thoughtbot/paperclip), [Refile](https://github.com/refile/refile), [Carrierwave](https://github.com/carrierwaveuploader/carrierwave), or [Active Storage](https://github.com/rails/rails/tree/master/activestorage) to handle uploads. After they've been uploaded, you can then serve them using this gem.
+---
+<!-- /ix-docs-ignore -->
 
 * [Installation](#installation)
 * [Usage](#usage)
