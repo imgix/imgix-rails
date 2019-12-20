@@ -1,7 +1,7 @@
 <!-- ix-docs-ignore -->
 ![imgix logo](https://assets.imgix.net/sdk-imgix-logo.svg)
 
-`imgix-rails` is a gem designed to make integrating [imgix](https://www.imgix.com/) into your Rails app easier. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces.
+`imgix-rails` is a gem for integrating [imgix](https://www.imgix.com/) into Ruby on Rails applications. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces.
 
 [![Gem Version](https://badge.fury.io/rb/imgix-rails.svg)](https://rubygems.org/gems/imgix-rails)
 [![Build Status](https://travis-ci.org/imgix/imgix-rails.svg?branch=master)](https://travis-ci.org/imgix/imgix-rails)
@@ -26,20 +26,20 @@
 * [Development](#development)
 * [Contributing](#contributing)
 
-
 <a name="installation"></a>
 ## Installation
 
 Add this line to your application's Gemfile:
 
-```ruby
+```rb
 gem 'imgix-rails'
 ```
 
 And then execute:
 
-    $ bundle
-
+```bash
+$ bundle
+```
 
 <a name="usage"></a>
 ## Usage
@@ -51,7 +51,7 @@ imgix-rails provides a few different hooks to work with your existing Rails appl
 
 Before you get started, you will need to define your imgix configuration in your `config/application.rb`, or in an environment-specific configuration file.
 
-```ruby
+```rb
 Rails.application.configure do
   config.imgix = {
     source: "assets.imgix.net"
@@ -75,7 +75,7 @@ In addition to the standard configuration flags, the following options can be us
 
 Example:
 
-```ruby
+```rb
 Rails.application.configure do
   config.imgix = {
     sources: {
@@ -136,7 +136,7 @@ Will generate URLs using `assets2.imgix.net` source.
 
 We recommend leveraging this to generate powerful helpers within your application like the following:
 
-```ruby
+```rb
 def profile_image_tag(user)
   ix_image_tag(user.profile_image_url, url_params: { w: 100, h: 200, fit: 'crop' })
 end
@@ -271,7 +271,7 @@ https://assets2.imgix.net/users/1/avatar.png?w=400&h=300
 
 Since `ix_image_url` lives inside `UrlHelper`, it can also be used in places other than your views quite easily. This is useful for things such as including imgix URLs in JSON output from a serializer class.
 
-```ruby
+```rb
 include Imgix::Rails::UrlHelper
 
 puts ix_image_url('/users/1/avatar.png', { w: 400, h: 300 })
@@ -353,14 +353,14 @@ bucket: your_own_bucket
 Modify your active_storage.service setting depending on what environment you are using. For example, to use Amazon s3 in production, make the following change:
 
 #### config/environments/production.rb
-```ruby
+```rb
 config.active_storage.service = :amazon
 ```
 
 As you would normally with imgix-rails, configure your application to point to your imgix source:
 
 #### config/application.rb
-```ruby
+```rb
 Rails.application.configure do
       config.imgix = {
         source: your_domain,
