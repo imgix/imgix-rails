@@ -115,6 +115,31 @@ describe Imgix::Rails do
         expect(tag.attribute('src').value).to eq("http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}")
       end
     end
+
+    describe ':include_library_param' do
+      it 'ixlib parameter exists by default' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source
+          }
+        end
+
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
+        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}")
+      end
+
+      it 'respects the :include_library_param flag' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source,
+            include_library_param: false
+          }
+        end
+
+        tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg")).children[0]
+        expect(tag.attribute('src').value).to eq("https://assets.imgix.net/image.jpg")
+      end
+    end
   end
 
   describe Imgix::Rails::ViewHelper do
