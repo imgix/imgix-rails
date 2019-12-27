@@ -3,7 +3,7 @@
 
 `imgix-rails` is a gem for integrating [imgix](https://www.imgix.com/) into Ruby on Rails applications. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces.
 
-[![Gem Version](https://badge.fury.io/rb/imgix-rails.svg)](https://rubygems.org/gems/imgix-rails)
+[![Gem Version](https://img.shields.io/gem/v/imgix-rails.svg)](https://rubygems.org/gems/imgix-rails)
 [![Build Status](https://travis-ci.org/imgix/imgix-rails.svg?branch=master)](https://travis-ci.org/imgix/imgix-rails)
 ![Downloads](https://img.shields.io/gem/dt/imgix-rails)
 [![License](https://img.shields.io/github/license/imgix/imgix-rails)](https://github.com/imgix/imgix-rails/blob/master/LICENSE)
@@ -11,20 +11,24 @@
 ---
 <!-- /ix-docs-ignore -->
 
-* [Installation](#installation)
-* [Usage](#usage)
-  * [Configuration](#configuration)
-  * [ix_image_tag](#ix_image_tag)
-  * [ix_picture_tag](#ix_picture_tag)
-  * [ix_image_url](#ix_image_url)
-    * [Usage in Sprockets](#usage-in-sprockets)
-* [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
-  * [Paperclip and CarrierWave](#paperclip-and-carrierwave)
-  * [Refile](#refile)
-  * [Active Storage](#activestorage)
-* [Upgrade Guides](#upgrade-guides)
-* [Development](#development)
-* [Contributing](#contributing)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Configuration](#configuration)
+    - [Multi-source configuration](#multi-source-configuration)
+  - [ix_image_tag](#iximagetag)
+    - [Fixed image rendering](#fixed-image-rendering)
+  - [ix_picture_tag](#ixpicturetag)
+  - [ix_image_url](#iximageurl)
+    - [Usage in Sprockets](#usage-in-sprockets)
+- [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
+  - [Paperclip and CarrierWave](#paperclip-and-carrierwave)
+  - [Refile](#refile)
+  - [Active Storage](#active-storage)
+- [Upgrade Guides](#upgrade-guides)
+  - [3.x to 4.0](#3x-to-40)
+- [Development](#development)
+- [Contributing](#contributing)
+- [Code of Conduct](#code-of-conduct)
 
 <a name="installation"></a>
 ## Installation
@@ -341,7 +345,8 @@ end
 
 To set up imgix with ActiveStorage, first ensure that the remote source your ActiveStorage service is pointing to is the same as your imgix source — such as an s3 bucket.
 
-#### config/storage.yml
+**config/storage.yml**
+
 ```yml
 service: S3
 access_key_id: <%= Rails.application.credentials.dig(:aws, :access_key_id) %>
@@ -352,14 +357,16 @@ bucket: your_own_bucket
 
 Modify your active_storage.service setting depending on what environment you are using. For example, to use Amazon s3 in production, make the following change:
 
-#### config/environments/production.rb
+**config/environments/production.rb**
+
 ```rb
 config.active_storage.service = :amazon
 ```
 
 As you would normally with imgix-rails, configure your application to point to your imgix source:
 
-#### config/application.rb
+**config/application.rb**
+
 ```rb
 Rails.application.configure do
       config.imgix = {
@@ -372,7 +379,8 @@ end
 
 Finally, the two can be used together by passing in the filename of the ActiveStorage blob into the imgix-rails helper function:
 
-#### show.html.erb
+**show.html.erb**
+
 ```erb
 <%= ix_image_tag(@your_model.image.key) %>
 ```
