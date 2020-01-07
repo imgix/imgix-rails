@@ -82,5 +82,28 @@ describe Imgix::Rails::UrlHelper do
         expect(url_helper.ix_image_url("image.jpg")).to eq  "http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
       end
     end
+  
+    describe ':include_library_param' do
+      it 'ixlib parameter exists by default' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source
+          }
+        end
+
+        expect(url_helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
+      end
+
+      it 'respects the :include_library_param flag' do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: source,
+            include_library_param: false
+          }
+        end
+
+        expect(url_helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg"
+      end
+    end
   end
 end

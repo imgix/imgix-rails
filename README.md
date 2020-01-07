@@ -69,6 +69,7 @@ The following configuration flags will be respected:
 - `source`: a String or Array that specifies the imgix Source address. Should be in the form of `"assets.imgix.net"`.
 - `srcset_width_tolerance`: an optional numeric value determining the maximum tolerance allowable, between the downloaded dimensions and rendered dimensions of the image (default `0.08` i.e. `8%`).
 - `secure_url_token`: an optional secure URL token found in your dashboard (https://dashboard.imgix.com) used for signing requests
+- `include_library_param`: toggles the inclusion of the [`ixlib` parameter](https://github.com/imgix/imgix-rb#what-is-the-ixlib-param-on-every-request). Defaults to `true`.
 
 #### Multi-source configuration
 
