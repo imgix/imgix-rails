@@ -15,10 +15,10 @@
 - [Usage](#usage)
   - [Configuration](#configuration)
     - [Multi-source configuration](#multi-source-configuration)
-  - [ix_image_tag](#iximagetag)
+  - [`ix_image_tag`](#iximagetag)
     - [Fixed image rendering](#fixed-image-rendering)
-  - [ix_picture_tag](#ixpicturetag)
-  - [ix_image_url](#iximageurl)
+  - [`ix_picture_tag`](#ixpicturetag)
+  - [`ix_image_url`](#iximageurl)
     - [Usage in Sprockets](#usage-in-sprockets)
 - [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
   - [Paperclip and CarrierWave](#paperclip-and-carrierwave)
@@ -30,7 +30,6 @@
 - [Contributing](#contributing)
 - [Code of Conduct](#code-of-conduct)
 
-<a name="installation"></a>
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -45,12 +44,10 @@ And then execute:
 $ bundle
 ```
 
-<a name="usage"></a>
 ## Usage
 
 imgix-rails provides a few different hooks to work with your existing Rails application. All current methods are drop-in replacements for the `image_tag` helper.
 
-<a name="configuration"></a>
 ### Configuration
 
 Before you get started, you will need to define your imgix configuration in your `config/application.rb`, or in an environment-specific configuration file.
@@ -92,8 +89,7 @@ Rails.application.configure do
 end
 ```
 
-<a name="ix_image_tag"></a>
-### ix_image_tag
+### `ix_image_tag`
 
 The `ix_image_tag` helper method makes it easy to pass parameters to imgix to handle resizing, cropping, etc. It also simplifies adding responsive imagery to your Rails app by automatically generating a `srcset` based on the parameters you pass. We talk a bit about using the `srcset` attribute in an application in the following blog post: [“Responsive Images with `srcset` and imgix.”](https://docs.imgix.com/tutorials/responsive-images-srcset-imgix?_ga=utm_medium=referral&utm_source=sdk&utm_campaign=rails-readme).
 
@@ -179,8 +175,7 @@ https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=
 
 Fixed image rendering will automatically append a variable `q` parameter mapped to each `dpr` parameter when generating a `srcset`. This technique is commonly used to compensate for the increased filesize of high-DPR images. Since high-DPR images are displayed at a higher pixel density on devices, image quality can be lowered to reduce overall filesize without sacrificing perceived visual quality. For more information and examples of this technique in action, see [this blog post](https://blog.imgix.com/2016/03/30/dpr-quality?_ga=utm_medium=referral&utm_source=sdk&utm_campaign=rails-readme). This behavior will respect any overriding `q` value passed in via `url_params` and can be disabled altogether with `srcset_options: { disable_variable_quality: true }`.
 
-<a name="ix_picture_tag"></a>
-### ix_picture_tag
+### `ix_picture_tag`
 
 The `ix_picture_tag` helper method makes it easy to generate `picture` elements in your Rails app. `picture` elements are useful when an images needs to be art directed differently at different screen sizes.
 
@@ -251,8 +246,7 @@ To generate a `picture` element on a different source:
    ) %>
 ```
 
-<a name="ix_image_url"></a>
-### ix_image_url
+### `ix_image_url`
 
 The `ix_image_url` helper makes it easy to generate a URL to an image in your Rails app.
 
@@ -283,7 +277,6 @@ puts ix_image_url('/users/1/avatar.png', { w: 400, h: 300 })
 # => https://assets.imgix.net/users/1/avatar.png?w=400&h=300
 ```
 
-<a name="usage-in-sprockets"></a>
 #### Usage in Sprockets
 
 `ix_image_url` is also pulled in as a Sprockets helper, so you can generate imgix URLs in your asset pipeline files. For example, here's how it would work inside an `.scss.erb` file:
@@ -294,13 +287,10 @@ puts ix_image_url('/users/1/avatar.png', { w: 400, h: 300 })
 }
 ```
 
-<a name="using-with-image-uploading-libraries"></a>
 ## Using With Image Uploading Libraries
 
 imgix-rails plays well with image uploading libraries, because it just requires a URL and optional parameters as arguments. A good way to handle this interaction is by creating helpers that bridge between your uploading library of choice and imgix-rails. Below are examples of how this can work with some common libraries. Please submit an issue if you'd like to see specific examples for another!
 
-
-<a name="paperclip-and-carrierwave"></a>
 ### Paperclip and CarrierWave
 
 Paperclip and CarrierWave can directly provide paths to uploaded images, so we can use them with imgix-rails without a bridge.
@@ -309,8 +299,6 @@ Paperclip and CarrierWave can directly provide paths to uploaded images, so we c
 <%= ix_image_tag(@user.avatar.path, { auto: 'format', fit: 'crop', w: 500}) %>
 ```
 
-
-<a name="refile"></a>
 ### Refile
 
 Since Refile doesn't actually store URLs or paths in the database (instead using a "prefix" + image identifier), the basic setup is slightly different. In this case, we use a couple helpers that bridge between Refile and imgix-rails.
@@ -341,7 +329,6 @@ end
 <%= ix_refile_image_tag(@blog_post, :hero_photo, {auto: 'format', fit: 'crop', w: 500}) %>
 ```
 
-<a name="activestorage"></a>
 ### Active Storage
 
 To set up imgix with ActiveStorage, first ensure that the remote source your ActiveStorage service is pointing to is the same as your imgix source — such as an s3 bucket.
@@ -386,7 +373,6 @@ Finally, the two can be used together by passing in the filename of the ActiveSt
 <%= ix_image_tag(@your_model.image.key) %>
 ```
 
-<a name="upgrade-guides"></a>
 ## Upgrade Guides
 
 ### 3.x to 4.0
@@ -403,15 +389,12 @@ For users migrating to version 4.0 or later, it is important that all srcset-rel
 
 In addition to these changes, imgix-rails is now capable of producing [fixed-image srcsets](https://github.com/imgix/imgix-rb#fixed-image-rendering). Users should note that when certain dimension information is provided, imgix-rails will produce a `srcset` at different screen resolutions rather than the typical width pairs. This feature provides expanded functionality to cover more `srcset` use cases that users can take advantage of. We are always happy to provide our users with more tools to assist them in their efforts to build out responsive images on the web.
 
-<a name="development"></a>
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release` to create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
-
-<a name="contributing"></a>
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/imgix-rails/fork )
