@@ -3,7 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-# [4.0.0](https://github.com/imgix/imgix-rb/compare/3.1.0...4.0.0) - December 03, 2019
+## [4.0.1](https://github.com/imgix/imgix-rb/compare/4.0.0...4.0.1) - June 10, 2020
+
+- fix: update rake version ([#94](https://github.com/imgix/imgix-rails/pull/94))
+
+## [4.0.0](https://github.com/imgix/imgix-rb/compare/3.1.0...4.0.0) - December 03, 2019
 
 The v4.0.0 release of imgix-rails introduces a variety of improvements relating to how this gem handles and generates `srcset` attributes. However, in releasing this version there are some significant interface/behavioral changes that users need to be aware of. Users should note that the `min_width` and `max_width` fields (passed via `tag_options`), as well as the `widths` field, have all been moved to their own encompassing `srcset_options` field. This is done with the intention of providing a more organized and intuitive experience when fine-tuning how `srcset` width pairs are generated. See the following example demonstrating this new pattern:
 
