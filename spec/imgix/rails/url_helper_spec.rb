@@ -50,7 +50,7 @@ describe Imgix::Rails::UrlHelper do
       }.not_to raise_error
     end
 
-    it 'sets host if source is a String' do
+    it 'sets domain if source is a String' do
       Imgix::Rails.configure do |config|
         config.imgix = {
           source: source
