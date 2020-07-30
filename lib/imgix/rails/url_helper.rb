@@ -112,7 +112,7 @@ module Imgix
         }
 
         if imgix[:source].is_a?(String)
-          opts[:host] = imgix[:source]
+          opts[:domain] = imgix[:source]
         end
 
         if imgix.has_key?(:include_library_param)
@@ -127,7 +127,7 @@ module Imgix
         @imgix_clients = {}
 
         sources.map do |source, token|
-          opts[:host] = source
+          opts[:domain] = source
           opts[:secure_url_token] = token
           @imgix_clients[source] = ::Imgix::Client.new(opts)
         end
