@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.2](https://github.com/imgix/imgix-rb/compare/4.0.1...4.0.2) - July 31, 2020
+- fix: replace `opts[:host`] with `opts[:domain]` to resolve deprecation warnings ([#96](https://github.com/imgix/imgix-rails/pull/96))
+
 ## [4.0.1](https://github.com/imgix/imgix-rb/compare/4.0.0...4.0.1) - June 10, 2020
 
 - fix: update rake version ([#94](https://github.com/imgix/imgix-rails/pull/94))
