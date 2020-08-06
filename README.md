@@ -24,6 +24,8 @@
   - [Paperclip and CarrierWave](#paperclip-and-carrierwave)
   - [Refile](#refile)
   - [Active Storage](#active-storage)
+    - [S3](#s3)
+    - [GCS](#gcs)
 - [Upgrade Guides](#upgrade-guides)
   - [3.x to 4.0](#3x-to-40)
 - [Development](#development)
@@ -333,6 +335,7 @@ end
 
 To set up imgix with ActiveStorage, first ensure that the remote source your ActiveStorage service is pointing to is the same as your imgix source — such as an s3 bucket.
 
+### S3 
 **config/storage.yml**
 
 ```yml
@@ -343,12 +346,27 @@ region: us-east-1
 bucket: your_own_bucket
 ```
 
-Modify your active_storage.service setting depending on what environment you are using. For example, to use Amazon s3 in production, make the following change:
+### GCS 
+```yml
+google:
+  service: GCS
+  project: Project Name
+  credentials: <%= Rails.root.join("path/to/key.json") %>
+  bucket: Bucket Name
+```
+
+Modify your `active_storage.service` setting depending on what environment you are using. For example, to use Amazon s3 in production, make the following change:
 
 **config/environments/production.rb**
 
 ```rb
 config.active_storage.service = :amazon
+```
+
+To use Google GCS in production, configure the active storage service like so:
+
+```rb
+config.active_storage.service = :google
 ```
 
 As you would normally with imgix-rails, configure your application to point to your imgix source:
