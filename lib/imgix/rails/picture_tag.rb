@@ -15,7 +15,7 @@ class Imgix::Rails::PictureTag < Imgix::Rails::Tag
   end
 
   def render
-    content_tag(:picture, @tag_options) do
+    content_tag(:picture) do
       @breakpoints.each do |media, opts|
         validate_opts(opts)
 
@@ -28,7 +28,7 @@ class Imgix::Rails::PictureTag < Imgix::Rails::Tag
         concat(content_tag(:source, nil, source_tag_opts))
       end
 
-      concat Imgix::Rails::ImageTag.new(@path, source: @source, url_params: @url_params, srcset_options: @srcset_options).render
+      concat Imgix::Rails::ImageTag.new(@path, source: @source, url_params: @url_params, srcset_options: @srcset_options, tag_options: @tag_options).render
     end
   end
 
