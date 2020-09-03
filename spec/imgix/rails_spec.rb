@@ -52,14 +52,14 @@ describe Imgix::Rails do
 
     it 'expects either a :source or :sources, but not both' do
       Imgix::Rails.configure { |config| config.imgix = { source: "domain1", sources: "domain2" } }
-      
+
       expect{
         helper.ix_image_url("assets.png")
       }.to raise_error(Imgix::Rails::ConfigurationError, "Exactly one of :source, :sources is required")
     end
 
     it 'expects :sources to be a hash' do
-      Imgix::Rails.configure { |config| 
+      Imgix::Rails.configure { |config|
         config.imgix = {
           sources: 1
         }
@@ -382,8 +382,8 @@ describe Imgix::Rails do
         expect(tag.name).to eq('picture')
       end
 
-      it 'passes through options to the `picture`' do
-        expect(tag.attribute('class').value).to eq('a-picture-tag')
+      it 'passes through tag options to the contained `img`' do
+        expect(tag.css('img').attribute('class').value).to eq('a-picture-tag')
       end
 
       it 'generates the specified number of `source` children' do
@@ -501,7 +501,7 @@ describe Imgix::Rails do
                 }
               }
             )
-    
+
             Nokogiri::HTML.fragment(picture_tag).children[0]
           end
 
@@ -536,7 +536,7 @@ describe Imgix::Rails do
                 }
               }
             )
-    
+
             Nokogiri::HTML.fragment(picture_tag).children[0]
           end
 
@@ -571,7 +571,7 @@ describe Imgix::Rails do
                 }
               }
             )
-    
+
             Nokogiri::HTML.fragment(picture_tag).children[0]
           end
 
@@ -757,7 +757,7 @@ describe Imgix::Rails do
           end
         end
 
-        describe 'passes through options to the `picture`' do
+        describe 'passes through tag options to the contained `img`' do
           it 'with no source supplied' do
             picture_tag = helper.ix_picture_tag(
               'bertandernie.jpg',
@@ -766,7 +766,7 @@ describe Imgix::Rails do
               breakpoints: breakpoints,
             )
             tag = Nokogiri::HTML.fragment(picture_tag).children[0]
-            expect(tag.attribute('class').value).to eq('a-picture-tag')
+            expect(tag.css('img').attribute('class').value).to eq('a-picture-tag')
           end
 
           it 'with explicit source supplied' do
@@ -781,7 +781,7 @@ describe Imgix::Rails do
             url = tag.css('img')[0].attribute('src').value
 
             # tag_options
-            expect(tag.attribute('class').value).to eq('a-picture-tag')
+            expect(tag.css('img').attribute('class').value).to eq('a-picture-tag')
 
             # url_params
             expect(url).to include("w=300")
