@@ -19,6 +19,7 @@
     - [Fixed image rendering](#fixed-image-rendering)
   - [`ix_picture_tag`](#ixpicturetag)
   - [`ix_image_url`](#iximageurl)
+    - [Usage in Model](#usage-in-model)
     - [Usage in Sprockets](#usage-in-sprockets)
 - [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
   - [Paperclip and CarrierWave](#paperclip-and-carrierwave)
@@ -252,7 +253,7 @@ To generate a `picture` element on a different source:
 
 The `ix_image_url` helper makes it easy to generate a URL to an image in your Rails app.
 
-`ix_image_url` takes four arguments:
+`ix_image_url` takes three arguments:
 
 * `source`: an optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
 * `path`: The path or URL of the image to display.
@@ -270,6 +271,8 @@ https://assets.imgix.net/users/1/avatar.png?w=400&h=300
 https://assets2.imgix.net/users/1/avatar.png?w=400&h=300
 ```
 
+#### Usage in Model
+
 Since `ix_image_url` lives inside `UrlHelper`, it can also be used in places other than your views quite easily. This is useful for things such as including imgix URLs in JSON output from a serializer class.
 
 ```rb
@@ -278,6 +281,8 @@ include Imgix::Rails::UrlHelper
 puts ix_image_url('/users/1/avatar.png', { w: 400, h: 300 })
 # => https://assets.imgix.net/users/1/avatar.png?w=400&h=300
 ```
+
+Alternatively, you can also use the imgix [Ruby client](https://github.com/imgix/imgix-rb) in the same way.
 
 #### Usage in Sprockets
 
