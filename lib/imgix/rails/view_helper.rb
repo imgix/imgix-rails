@@ -8,8 +8,8 @@ module Imgix
     module ViewHelper
       include UrlHelper
 
-      def ix_image_tag(source=nil, path, tag_options: {}, url_params: {}, srcset_options: {})
-        return Imgix::Rails::ImageTag.new(path, source: source, tag_options: tag_options, url_params: url_params, srcset_options: srcset_options).render
+      def ix_image_tag(source=nil, path, tag_options: {}, url_params: {}, srcset_options: {}, lazy: nil)
+        return Imgix::Rails::ImageTag.new(path, source: source, tag_options: tag_options, url_params: url_params, srcset_options: srcset_options, lazy: lazy).render
       end
 
       def ix_picture_tag(source=nil, path, tag_options: {}, url_params: {}, breakpoints: {}, srcset_options: {})
