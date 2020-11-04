@@ -102,6 +102,7 @@ The `ix_image_tag` helper method makes it easy to pass parameters to imgix to ha
 
 * `source`: An optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
 * `path`: The path or URL of the image to display.
+* `lazy`: If true, attributes will be generated in the `data` attribute hash. A 1-pixel GIF will be displayed until image has been loaded. You can optionally pass an URL to `lazy` for the image which will be used i.e. your own loading GIF. You need to bring your JS lib to support this like [lazysizes](https://github.com/aFarkas/lazysizes).
 * `tag_options`: HTML attributes to apply to the generated `img` element. This is useful for adding class names, alt tags, etc.
 * `url_params`: The imgix URL parameters to apply to this image. These will be applied to each URL in the `srcset` attribute, as well as the fallback `src` attribute.
 * `srcset_options`: A variety of options that allow for fine tuning `srcset` generation. More information on each of these modifiers can be found in the [imgix-rb documentation](https://github.com/imgix/imgix-rb#srcset-generation). Any of the following can be passed as arguments:
