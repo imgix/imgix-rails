@@ -17,6 +17,7 @@
     - [Multi-source configuration](#multi-source-configuration)
   - [`ix_image_tag`](#iximagetag)
     - [Fixed image rendering](#fixed-image-rendering)
+    - [Lazy Loading](#lazy-loading)
   - [`ix_picture_tag`](#ixpicturetag)
   - [`ix_image_url`](#iximageurl)
     - [Usage in Model](#usage-in-model)
@@ -178,6 +179,69 @@ https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=
 ```
 
 Fixed image rendering will automatically append a variable `q` parameter mapped to each `dpr` parameter when generating a `srcset`. This technique is commonly used to compensate for the increased filesize of high-DPR images. Since high-DPR images are displayed at a higher pixel density on devices, image quality can be lowered to reduce overall filesize without sacrificing perceived visual quality. For more information and examples of this technique in action, see [this blog post](https://blog.imgix.com/2016/03/30/dpr-quality?_ga=utm_medium=referral&utm_source=sdk&utm_campaign=rails-readme). This behavior will respect any overriding `q` value passed in via `url_params` and can be disabled altogether with `srcset_options: { disable_variable_quality: true }`.
+
+#### Lazy loading
+
+If you'd like to lazy load images, we recommend using [lazysizes](https://github.com/aFarkas/lazysizes). In order to use imgix-rails with lazysizes, you can simply add a `lazy` attribute with `true`:
+
+```erb
+<%= ix_image_tag('image.jpg', lazy: true, url_params: {w: 1000}) %>
+```
+
+Will render the following HTML:
+
+```html
+<img data-srcset="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=1&amp;q=75 1x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=2&amp;q=50 2x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=3&amp;q=35 3x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=4&amp;q=23 4x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=20 5x"
+sizes="100vw"
+data-src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000"
+src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=">
+```
+
+A small 1x1 GIF will be shown while the image is loading. Once the image
+has been loaded in the background, provided you have required lazysizes in your
+application, the correct image will be loaded.
+
+You can optionally pass an image to be used as the loading image:
+
+```erb
+<%= ix_image_tag('image.jpg', lazy: 'loading.gif', url_params: {w: 1000}) %>
+```
+
+This will render the following HTML:
+
+```html
+<img data-srcset="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=1&amp;q=75 1x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=2&amp;q=50 2x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=3&amp;q=35 3x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=4&amp;q=23 4x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=20 5x"
+sizes="100vw"
+data-src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000"
+src="/loading.gif">
+```
+
+You can use Imgix for the loading image as long as you use `ix_image_url`:
+
+```erb
+<%= ix_image_tag('image.jpg', lazy: ix_image_url('loading.gif', {w: 1000 }), url_params: {w: 1000}) %>
+```
+
+Then the result would be:
+
+```html
+<img data-srcset="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=1&amp;q=75 1x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=2&amp;q=50 2x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=3&amp;q=35 3x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=4&amp;q=23 4x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=20 5x"
+sizes="100vw"
+data-src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000"
+src="https://assets.imgix.net/loading.gif?ixlib=rails-3.0.2&amp;w=1000">
+```
 
 ### `ix_picture_tag`
 
