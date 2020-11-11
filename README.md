@@ -182,7 +182,7 @@ Fixed image rendering will automatically append a variable `q` parameter mapped 
 
 #### Lazy loading
 
-If you'd like to lazy load images, we recommend using [lazysizes](https://github.com/aFarkas/lazysizes). In order to use imgix-rails with lazysizes, you can simply add a `lazy` attribute with `true`:
+If you'd like to lazy load images, we recommend using [lazysizes](https://github.com/aFarkas/lazysizes). In order to use imgix-rails with lazysizes, you can add a `lazy` attribute and pass it a value `true`:
 
 ```erb
 <%= ix_image_tag('image.jpg', lazy: true, url_params: {w: 1000}) %>
@@ -224,7 +224,7 @@ data-src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000"
 src="/loading.gif">
 ```
 
-You can use Imgix for the loading image as long as you use `ix_image_url`:
+You can use an image served through imgix for the loading image as long as you use `ix_image_url`:
 
 ```erb
 <%= ix_image_tag('image.jpg', lazy: ix_image_url('loading.gif', {w: 1000 }), url_params: {w: 1000}) %>
