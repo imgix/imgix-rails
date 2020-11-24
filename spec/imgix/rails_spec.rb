@@ -335,22 +335,17 @@ describe Imgix::Rails do
       end
       describe 'lazy' do
         it 'sets the original path to data-src' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", lazy: true)).children[0]
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", attribute_options: { src: "data-src", srcset: "data-srcset", sizes: "data-sizes"}, tag_options: {src: "lazy.jpg"})).children[0]
           expect(tag.attribute('data-src').value).to eq "https://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
         end
 
-        it 'sets src to gif if no image is provided' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", lazy: true)).children[0]
-          expect(tag.attribute('src').value).to include "data:image/gif"
-        end
-
         it 'sets src to image provided with lazy' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", lazy: "lazy-image.jpg")).children[0]
-          expect(tag.attribute('src').value).to eq "/images/lazy-image.jpg"
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", attribute_options: { src: "data-src", srcset: "data-srcset", sizes: "data-sizes"}, tag_options: {src: "lazy.jpg"})).children[0]
+          expect(tag.attribute('src').value).to eq "/images/lazy.jpg"
         end
 
         it 'keeps the sourcesets on data-sourcesets' do
-          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", lazy: true)).children[0]
+          tag = Nokogiri::HTML.fragment(helper.ix_image_tag("image.jpg", attribute_options: { src: "data-src", srcset: "data-srcset", sizes: "data-sizes"}, tag_options: {src: "lazy.jpg"})).children[0]
           expect(tag.attribute('data-srcset').value.split(',').size).to eq(31)
         end
       end

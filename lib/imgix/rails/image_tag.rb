@@ -5,26 +5,26 @@ class Imgix::Rails::ImageTag < Imgix::Rails::Tag
   def render
     url = ix_image_url(@source, @path, @url_params)
 
-    if @lazy
-      @tag_options[:data] ||= {}
-      @tag_options[:data][:srcset] = srcset
-      @tag_options[:data][:sizes] ||= '100vw'
-      @tag_options[:data][:src] = url
-      image_tag(lazy_url, @tag_options)
+    if @attribute_options[:srcset].present?
+      @tag_options[@attribute_options[:srcset]] = srcset
+    else
+      @tag_options[:srcset] = srcset
+    end
+
+    if @attribute_options[:size].present?
+      @tag_options[@attribute_options[:size]] ||= '100vw'
     else
       @tag_options[:sizes] ||= '100vw'
-      @tag_options[:srcset] = srcset
-      image_tag(url, @tag_options)
     end
-  end
 
-  private
+    if @attribute_options[:src].present?
+      @tag_options[@attribute_options[:src]] = url
+    end
 
-  def lazy_url
-    if @lazy == true
-      "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs="
+    if @tag_options[:src].present?
+      image_tag(@tag_options[:src], @tag_options)
     else
-      @lazy
+      image_tag(url, @tag_options)
     end
   end
 end
