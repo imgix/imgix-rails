@@ -103,7 +103,6 @@ The `ix_image_tag` helper method makes it easy to pass parameters to imgix to ha
 
 * `source`: An optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
 * `path`: The path or URL of the image to display.
-* `lazy`: If true, attributes will be generated in the `data` attribute hash. A 1-pixel GIF will be displayed until image has been loaded. You can optionally pass an URL to `lazy` for the image which will be used i.e. your own loading GIF. You need to bring your JS lib to support this like [lazysizes](https://github.com/aFarkas/lazysizes).
 * `tag_options`: HTML attributes to apply to the generated `img` element. This is useful for adding class names, alt tags, etc.
 * `url_params`: The imgix URL parameters to apply to this image. These will be applied to each URL in the `srcset` attribute, as well as the fallback `src` attribute.
 * `srcset_options`: A variety of options that allow for fine tuning `srcset` generation. More information on each of these modifiers can be found in the [imgix-rb documentation](https://github.com/imgix/imgix-rb#srcset-generation). Any of the following can be passed as arguments:
@@ -111,6 +110,8 @@ The `ix_image_tag` helper method makes it easy to pass parameters to imgix to ha
   * [`min_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The minimum width that `srcset` pairs will be generated with. Will be ignored if `widths` are provided.
   * [`max_width`](https://github.com/imgix/imgix-rb#minimum-and-maximum-width-ranges): The maximum width that `srcset` pairs will be generated with. Will be ignored if `widths` are provided.
   * [`disable_variable_quality`](https://github.com/imgix/imgix-rb#variable-qualities): Pass `true` to disable variable quality parameters when generating a `srcset` ([fixed-images only](https://github.com/imgix/imgix-rails#fixed-image-rendering)). In addition, imgix-rails will respect an overriding `q` (quality) parameter if one is provided through `url_params`.
+  * `attribute_options`: Allow you to change where imgix-rails renders
+    attributes. This can be helpful if you want to add lazy-loading.
 
 ```erb
 <%= ix_image_tag('/unsplash/hotairballoon.jpg', url_params: { w: 300, h: 500, fit: 'crop', crop: 'right'}, tag_options: { alt: 'A hot air balloon on a sunny day' }) %>
@@ -182,10 +183,12 @@ Fixed image rendering will automatically append a variable `q` parameter mapped 
 
 #### Lazy loading
 
-If you'd like to lazy load images, we recommend using [lazysizes](https://github.com/aFarkas/lazysizes). In order to use imgix-rails with lazysizes, you can add a `lazy` attribute and pass it a value `true`:
+If you'd like to lazy load images, we recommend using [lazysizes](https://github.com/aFarkas/lazysizes). In order to use imgix-rails with lazysizes, you need to use `attribute_options` as well as set `tag_options[:src]`:
 
 ```erb
-<%= ix_image_tag('image.jpg', lazy: true, url_params: {w: 1000}) %>
+<%= ix_image_tag('image.jpg', attribute_options: {src: "data-src",
+srcset: "data-srcset", sizes: "data-sizes"}, url_params: {w: 1000},
+tag_options: {src: "lqip.jpg"}) %>
 ```
 
 Will render the following HTML:
@@ -196,51 +199,9 @@ https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=2&amp;q=
 https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=3&amp;q=35 3x,
 https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=4&amp;q=23 4x,
 https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=20 5x"
-sizes="100vw"
+data-sizes="100vw"
 data-src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000"
-src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=">
-```
-
-A small 1x1 GIF will be shown while the image is loading. Once the image
-has been loaded in the background, provided you have required lazysizes in your
-application, the correct image will be loaded.
-
-You can optionally pass an image to be used as the loading image:
-
-```erb
-<%= ix_image_tag('image.jpg', lazy: 'loading.gif', url_params: {w: 1000}) %>
-```
-
-This will render the following HTML:
-
-```html
-<img data-srcset="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=1&amp;q=75 1x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=2&amp;q=50 2x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=3&amp;q=35 3x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=4&amp;q=23 4x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=20 5x"
-sizes="100vw"
-data-src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000"
-src="/loading.gif">
-```
-
-You can use an image served through imgix for the loading image as long as you use `ix_image_url`:
-
-```erb
-<%= ix_image_tag('image.jpg', lazy: ix_image_url('loading.gif', {w: 1000 }), url_params: {w: 1000}) %>
-```
-
-Then the result would be:
-
-```html
-<img data-srcset="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=1&amp;q=75 1x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=2&amp;q=50 2x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=3&amp;q=35 3x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=4&amp;q=23 4x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=20 5x"
-sizes="100vw"
-data-src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000"
-src="https://assets.imgix.net/loading.gif?ixlib=rails-3.0.2&amp;w=1000">
+src="lqip.jpg">
 ```
 
 ### `ix_picture_tag`

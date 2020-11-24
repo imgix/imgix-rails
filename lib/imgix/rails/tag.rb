@@ -5,13 +5,13 @@ class Imgix::Rails::Tag
   include Imgix::Rails::UrlHelper
   include ActionView::Helpers
 
-  def initialize(path, source: nil, tag_options: {}, url_params: {}, srcset_options: {}, lazy: nil)
+  def initialize(path, source: nil, tag_options: {}, url_params: {}, srcset_options: {}, attribute_options: {})
     @path = path
     @source = source
     @tag_options = tag_options
     @url_params = url_params
     @srcset_options = srcset_options
-    @lazy = lazy
+    @attribute_options = attribute_options
   end
 
 protected
