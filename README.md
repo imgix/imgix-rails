@@ -4,7 +4,7 @@
 `imgix-rails` is a gem for integrating [imgix](https://www.imgix.com/) into Ruby on Rails applications. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces.
 
 [![Gem Version](https://img.shields.io/gem/v/imgix-rails.svg)](https://rubygems.org/gems/imgix-rails)
-[![Build Status](https://travis-ci.org/imgix/imgix-rails.svg?branch=main)](https://travis-ci.org/imgix/imgix-rails)
+[![Build Status](https://travis-ci.com/imgix/imgix-rails.svg?branch=main)](https://travis-ci.com/imgix/imgix-rails)
 ![Downloads](https://img.shields.io/gem/dt/imgix-rails)
 [![License](https://img.shields.io/github/license/imgix/imgix-rails)](https://github.com/imgix/imgix-rails/blob/main/LICENSE)
 
