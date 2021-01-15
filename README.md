@@ -7,32 +7,34 @@
 [![Build Status](https://travis-ci.com/imgix/imgix-rails.svg?branch=main)](https://travis-ci.com/imgix/imgix-rails)
 ![Downloads](https://img.shields.io/gem/dt/imgix-rails)
 [![License](https://img.shields.io/github/license/imgix/imgix-rails)](https://github.com/imgix/imgix-rails/blob/main/LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fimgix%2Fimgix-rails.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fimgix%2Fimgix-rails?ref=badge_shield)
 
 ---
 <!-- /ix-docs-ignore -->
 
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Configuration](#configuration)
-    - [Multi-source configuration](#multi-source-configuration)
-  - [`ix_image_tag`](#iximagetag)
-    - [Fixed image rendering](#fixed-image-rendering)
-    - [Lazy Loading](#lazy-loading)
-  - [`ix_picture_tag`](#ixpicturetag)
-  - [`ix_image_url`](#iximageurl)
-    - [Usage in Model](#usage-in-model)
-    - [Usage in Sprockets](#usage-in-sprockets)
+    * [Configuration](#configuration)
+        + [Multi-source configuration](#multi-source-configuration)
+    * [`ix_image_tag`](#ix_image_tag)
+        + [Fixed image rendering](#fixed-image-rendering)
+        + [Lazy loading](#lazy-loading)
+    * [`ix_picture_tag`](#ix_picture_tag)
+    * [`ix_image_url`](#ix_image_url)
+        + [Usage in Model](#usage-in-model)
+        + [Usage in Sprockets](#usage-in-sprockets)
 - [Using With Image Uploading Libraries](#using-with-image-uploading-libraries)
-  - [Paperclip and CarrierWave](#paperclip-and-carrierwave)
-  - [Refile](#refile)
-  - [Active Storage](#active-storage)
-    - [S3](#s3)
-    - [GCS](#gcs)
+    * [Paperclip and CarrierWave](#paperclip-and-carrierwave)
+    * [Refile](#refile)
+    * [Active Storage](#active-storage)
+    * [S3](#s3)
+    * [GCS](#gcs)
 - [Upgrade Guides](#upgrade-guides)
-  - [3.x to 4.0](#3x-to-40)
+    * [3.x to 4.0](#3x-to-40)
 - [Development](#development)
 - [Contributing](#contributing)
 - [Code of Conduct](#code-of-conduct)
+- [License](#license)
 
 ## Installation
 
@@ -454,3 +456,6 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Code of Conduct
 Users contributing to or participating in the development of this project are subject to the terms of imgix's [Code of Conduct](https://github.com/imgix/code-of-conduct).
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fimgix%2Fimgix-rails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fimgix%2Fimgix-rails?ref=badge_large)
