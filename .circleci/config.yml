@@ -1,12 +1,149 @@
-version: 2.1
-jobs:
-  build:
-    docker:
-      - image: alpine:3.7
+version: 2.1 # Use 2.1 to enable using orbs and other features.
+ 
+orbs:
+  ruby: circleci/ruby@1.2.0
+  node: circleci/node@2
+
+commands:
+  rspec:
+    parameters: 
+      out-path:
+        default: /tmp/test-results/rspec
+        description: >-
+          Where to save the rspec.xml file. Will automatically be saved to
+          test_results and artifacts on CircleCI.
+        type: string
     steps:
       - run:
-          name: The First Step
+          command: >
+            mkdir -p <<parameters.out-path>>
+            
+            bundle exec rspec --format RspecJunitFormatter --out <<parameters.out-path>>/results.xml --format progress 
+          name: "Run tests with RSpec"
+      - store_test_results:
+          path: <<parameters.out-path>>
+      - store_artifacts:
+          destination: test-results
+          path: <<parameters.out-path>>
+  # Have to override the command from the ruby orb, since it doesn't support the --add-platform command
+  install-deps:
+    description: Install gems with Bundler.
+    parameters:
+      app-dir:
+        default: .
+        description: >
+          Path to the directory containing your Gemfile file. Not needed if Gemfile
+          lives in the root.
+        type: string
+      bundler-version:
+        default: ''
+        description: >
+          Configure which version of bundler to install and utilize. By default, it
+          gets the bundler version from Gemfile.lock, but if it is not working use
+          this to override.
+        type: string
+      key:
+        default: gems-v1
+        description: The cache key to use. The key is immutable.
+        type: string
+      path:
+        default: ./vendor/bundle
+        description: >
+          Installation path. By default, it will run bundle with `--deployment` flag
+          and installs gems to the vendor/bundle directory.
+        type: string
+      with-cache:
+        default: true
+        description: Enable automatic caching of your gemfile dependencies for increased speed.
+        type: boolean
+      platform:
+        default: 'x86_64-linux'
+        type: string
+    steps:
+      - when:
+          condition: <<parameters.with-cache>>
+          steps:
+            - restore_cache:
+                keys:
+                  - >-
+                    << parameters.key >>-{{ checksum
+                    "<<parameters.app-dir>>/Gemfile"  }}-{{ .Branch }}
+                  - >-
+                    << parameters.key >>-{{ checksum
+                    "<<parameters.app-dir>>/Gemfile"  }}
+                  - << parameters.key >>
+      - run:
           command: |
-            echo 'Hello World!'
-            echo 'This is the delivery pipeline'
+            gem install bundler
 
+            # here is where we add the platform command to allow CircleCI to bundle
+            bundle lock --add-platform <<parameters.platform>> 
+            if [ "<< parameters.path >>" == "./vendor/bundle" ]; then
+              bundle config set deployment 'true'
+            fi
+            bundle config set path << parameters.path >>
+            bundle check || bundle install
+          name: >-
+            Bundle Install <<^parameters.with-cache>>(No
+            Cache)<</parameters.with-cache>>
+          working_directory: <<parameters.app-dir>>
+      - when:
+          condition: <<parameters.with-cache>>
+          steps:
+            - save_cache:
+                key: >-
+                  << parameters.key >>-{{ checksum
+                  "<<parameters.app-dir>>/Gemfile"  }}-{{ .Branch }}
+                paths:
+                  - <<parameters.app-dir>>/<< parameters.path >>
+  checkout-and-install-deps-and-test:
+    parameters: 
+      key:
+        default: gems-v1
+        description: The cache key to use. The key is immutable.
+        type: string
+    steps:
+      - checkout
+      - install-deps:
+          key: <<parameters.key>>
+      - rspec
+ 
+jobs:
+  ruby-v3-0:
+    docker:
+      - image: cimg/ruby:3.0-node 
+    steps:
+      - checkout-and-install-deps-and-test:
+          key: ruby3.0
+
+  ruby-v2-7:
+    docker:
+      - image: cimg/ruby:2.7-node 
+    steps:
+      - checkout-and-install-deps-and-test:
+          key: ruby2.7
+ 
+  # EOL 2022-03-31
+  ruby-v2-6:
+    docker:
+      - image: cimg/ruby:2.6-node 
+    steps:
+      - checkout-and-install-deps-and-test:
+          key: ruby2.6
+
+  ruby-vjruby:
+    docker:
+      - image: circleci/jruby:latest-node
+    steps:
+      - checkout-and-install-deps-and-test:
+          key: jruby
+
+ 
+workflows:
+  version: 2
+  build_and_test:     
+    jobs:             
+      - ruby-v3-0
+      - ruby-v2-7
+      - ruby-v2-6
+      - ruby-vjruby
