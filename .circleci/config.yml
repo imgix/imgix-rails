@@ -26,6 +26,7 @@ commands:
           destination: test-results
           path: <<parameters.out-path>>
   # Have to override the command from the ruby orb, since it doesn't support the --add-platform command
+  # Since this command wholly comes from the ruby orb, the best documentation can be found at: https://circleci.com/developer/orbs/orb/circleci/ruby
   install-deps:
     description: Install gems with Bundler.
     parameters:
@@ -76,7 +77,8 @@ commands:
           command: |
             gem install bundler
 
-            # here is where we add the platform command to allow CircleCI to bundle
+            # here is only part that is changed from the orb command,
+            # where we add the platform command to allow CircleCI to bundle
             bundle lock --add-platform <<parameters.platform>> 
             if [ "<< parameters.path >>" == "./vendor/bundle" ]; then
               bundle config set deployment 'true'
@@ -96,54 +98,32 @@ commands:
                   "<<parameters.app-dir>>/Gemfile"  }}-{{ .Branch }}
                 paths:
                   - <<parameters.app-dir>>/<< parameters.path >>
-  checkout-and-install-deps-and-test:
-    parameters: 
-      key:
-        default: gems-v1
-        description: The cache key to use. The key is immutable.
+ 
+jobs:
+  test:
+    parameters:
+      version: 
+        default: "cimg/ruby:3.0-node"
+        description: Ruby image to use
         type: string
+    docker:
+      - image: <<parameters.version>>
     steps:
       - checkout
       - install-deps:
-          key: <<parameters.key>>
+          key: <<parameters.version>>
       - rspec
- 
-jobs:
-  ruby-v3-0:
-    docker:
-      - image: cimg/ruby:3.0-node 
-    steps:
-      - checkout-and-install-deps-and-test:
-          key: ruby3.0
-
-  ruby-v2-7:
-    docker:
-      - image: cimg/ruby:2.7-node 
-    steps:
-      - checkout-and-install-deps-and-test:
-          key: ruby2.7
- 
-  # EOL 2022-03-31
-  ruby-v2-6:
-    docker:
-      - image: cimg/ruby:2.6-node 
-    steps:
-      - checkout-and-install-deps-and-test:
-          key: ruby2.6
-
-  ruby-vjruby:
-    docker:
-      - image: circleci/jruby:latest-node
-    steps:
-      - checkout-and-install-deps-and-test:
-          key: jruby
 
  
 workflows:
   version: 2
-  build_and_test:     
-    jobs:             
-      - ruby-v3-0
-      - ruby-v2-7
-      - ruby-v2-6
-      - ruby-vjruby
+  test:     
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              version:
+                - "cimg/ruby:3.0-node"
+                - "cimg/ruby:2.7-node"
+                - "cimg/ruby:2.6-node"
+                - "circleci/jruby:9.2.11.0-node"
