@@ -611,6 +611,35 @@ describe Imgix::Rails do
           end
         end
       end
+
+      context 'with img_tag_options' do
+        let(:tag) do
+          picture_tag = helper.ix_picture_tag(
+            'bertandernie.jpg',
+            tag_options: {
+              title: 'A picture of Bert and Ernie'
+            },
+            img_tag_options: {
+              alt: 'Bert and Ernie'
+            },
+            url_params: {
+              w: 300,
+              h: 300,
+              fit: 'crop',
+            }
+          )
+
+          Nokogiri::HTML.fragment(picture_tag).children[0]
+        end
+
+        it 'sets tag_attributes on picture' do
+          expect(tag.attr('title')).to eq 'A picture of Bert and Ernie'
+        end
+
+        it 'sets img_tag_attributes on img' do
+          expect(tag.css('img').first.attr('alt')).to eq 'Bert and Ernie'
+        end
+      end
     end
   end
 
