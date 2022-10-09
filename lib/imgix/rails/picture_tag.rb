@@ -5,10 +5,11 @@ require "action_view"
 class Imgix::Rails::PictureTag < Imgix::Rails::Tag
   include ActionView::Context
 
-  def initialize(path, source: nil, tag_options: {}, url_params: {}, breakpoints: {}, srcset_options: {})
+  def initialize(path, source: nil, tag_options: {}, img_tag_options: {}, url_params: {}, breakpoints: {}, srcset_options: {})
     @path = path
     @source = source
     @tag_options = tag_options
+    @img_tag_options = img_tag_options
     @url_params = url_params
     @breakpoints = breakpoints
     @srcset_options = srcset_options
@@ -28,7 +29,7 @@ class Imgix::Rails::PictureTag < Imgix::Rails::Tag
         concat(content_tag(:source, nil, source_tag_opts))
       end
 
-      concat Imgix::Rails::ImageTag.new(@path, source: @source, url_params: @url_params, srcset_options: @srcset_options).render
+      concat Imgix::Rails::ImageTag.new(@path, source: @source, tag_options: @img_tag_options, url_params: @url_params, srcset_options: @srcset_options).render
     end
   end
 
