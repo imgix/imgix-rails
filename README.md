@@ -215,7 +215,7 @@ The `ix_picture_tag` helper method makes it easy to generate `picture` elements 
 * `source`: an optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
 * `path`: The path or URL of the image to display.
 * `tag_options`: Any options to apply to the parent `picture` element. This is useful for adding class names, etc.
-* `img_tag_options`: Any options to apply to the generated `img` element. This can be useful to add and `alt` attribute.
+* `img_tag_options`: Any options to apply to the generated `img` element. This can be useful to add an `alt` attribute.
 * `url_params`: Default imgix options. These will be used to generate a fallback `img` tag for older browsers, and used in each `source` unless overridden by `breakpoints`.
 * `breakpoints`: A hash describing the variants. Each key must be a media query (e.g. `(max-width: 880px)`), and each value must be a hash of parameter overrides for that media query. A `source` element will be generated for each breakpoint specified.
 * `srcset_options`: A variety of options that allow for fine tuning `srcset` generation. More information on each of these modifiers can be found in the [imgix-rb documentation](https://github.com/imgix/imgix-rb#srcset-generation). Any of the following can be passed as arguments:
