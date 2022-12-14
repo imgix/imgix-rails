@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.3.0](https://github.com/imgix/imgix-rb/compare/4.2.0...4.3.0) - December 14, 2022
+
+- Add img_tag_options to ix_picture_tag ([#118] (https://github.com/imgix/imgix-rails/pull/118))
+
 ## [4.2.0](https://github.com/imgix/imgix-rb/compare/4.1.0...4.2.0) - January 05, 2021
 
 - Add support for lazy image loading ([#108](https://github.com/imgix/imgix-rails/pull/108))
