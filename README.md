@@ -1,7 +1,7 @@
 <!-- ix-docs-ignore -->
 ![imgix logo](https://assets.imgix.net/sdk-imgix-logo.svg)
 
-`imgix-rails` is a gem for integrating [imgix](https://www.imgix.com/) into Ruby on Rails applications. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces.
+`imgix-rails` is a gem for integrating [imgix](https://www.imgix.com/) into Ruby on Rails applications. It builds on [imgix-rb](https://github.com/imgix/imgix-rb) to offer a few Rails-specific interfaces. It is tested under Ruby versions `3.1`, `3.0`, `2.7`, and `jruby-9.2.11.0`.
 
 [![Gem Version](https://img.shields.io/gem/v/imgix-rails.svg)](https://rubygems.org/gems/imgix-rails)
 [![Build Status](https://circleci.com/gh/imgix/imgix-rails.svg?style=shield)](https://circleci.com/gh/imgix/imgix-rails)
