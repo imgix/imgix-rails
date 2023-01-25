@@ -78,7 +78,7 @@ describe Imgix::Rails::UrlHelper do
         expect(url_helper.ix_image_url("image.jpg")).to eq  "http://assets.imgix.net/image.jpg?ixlib=rails-#{Imgix::Rails::VERSION}"
       end
     end
-  
+
     describe ':include_library_param' do
       it 'ixlib parameter exists by default' do
         Imgix::Rails.configure do |config|
@@ -99,6 +99,82 @@ describe Imgix::Rails::UrlHelper do
         end
 
         expect(url_helper.ix_image_url("image.jpg")).to eq  "https://assets.imgix.net/image.jpg"
+      end
+    end
+  end
+
+  describe '#ix_image_url' do
+    context 'with proper configuration' do
+      before do
+        Imgix::Rails.configure do |config|
+          config.imgix = {
+            source: "example.imgix.net",
+            include_library_param: false
+          }
+        end
+      end
+
+      context 'with a single argument' do
+        subject { url_helper.ix_image_url("image(1).png") }
+
+        it 'builds the expected URL' do
+          expect(subject).to eq('https://example.imgix.net/image%281%29.png')
+        end
+      end
+
+      context 'with 2 arguments' do
+        context "when the first argument is a string and the second is a hash" do
+          subject { url_helper.ix_image_url("image(1).png", params) }
+          let(:params) { {key: :value} }
+
+          it { expect(subject).to eq('https://example.imgix.net/image%281%29.png?key=value') }
+
+          context "when disabling path encoding" do
+            before { params.merge!(disable_path_encoding: true) }
+
+            it "doesn't encode the URL" do
+              expect(subject).to eq( ('https://example.imgix.net/image(1).png?key=value'))
+            end
+          end
+        end
+
+        context "when the first argument is a string and the second too" do
+          subject { url_helper.ix_image_url("example.imgix.net", "image(1).png") }
+
+          it { expect(subject).to eq( 'https://example.imgix.net/image%281%29.png') }
+        end
+
+        context "when the first argument is not a string" do
+          subject { url_helper.ix_image_url(:a, :b) }
+
+          it "raises an error" do
+            expect { subject }.to raise_error(RuntimeError)
+          end
+        end
+      end
+
+      context 'with 3 arguments' do
+        subject { url_helper.ix_image_url("example.imgix.net", "image(1).png", params) }
+
+        let(:params) { {key: :value} }
+
+        it { expect(subject).to eq( 'https://example.imgix.net/image%281%29.png?key=value') }
+
+        context "when disabling path encoding" do
+          before { params.merge!(disable_path_encoding: true) }
+
+          it "doesn't encode the URL" do
+            expect(subject).to eq( ('https://example.imgix.net/image(1).png?key=value'))
+          end
+        end
+      end
+
+      context 'with more than 3 arguments' do
+        subject { url_helper.ix_image_url(:a, :b, :c, :d) }
+
+        it 'raises an error' do
+          expect { subject }.to raise_error(RuntimeError)
+        end
       end
     end
   end
