@@ -290,11 +290,11 @@ The `ix_image_url` helper makes it easy to generate a URL to an image in your Ra
 
 * `source`: an optional String indicating the source to be used. If unspecified `:source` or `:default_source` will be used. If specified, the value must be defined in the config.
 * `path`: The path or URL of the image to display.
-* `options`: The imgix URL parameters to apply to this image URL.
+* `options`: The imgix URL parameters to apply to this image URL. Optionally, you can use `disable_path_encoding: false` for disabling URL-encoding which will be applied by default.
 
 ```erb
 <%= ix_image_url('/users/1/avatar.png', { w: 400, h: 300 }) %>
-<%= ix_image_url('assets2.imgix.net', '/users/1/avatar.png', { w: 400, h: 300 }) %>
+<%= ix_image_url('assets2.imgix.net', '/users/1/avatar.png', { w: 400, h: 300, disable_path_encoding: true }) %>
 ```
 
 Will generate the following URLs:

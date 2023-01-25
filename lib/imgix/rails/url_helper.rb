@@ -6,6 +6,8 @@ module Imgix
       def ix_image_url(*args)
         validate_configuration!
 
+        disable_path_encoding = args.last.is_a?(Hash) && args.last.delete(:disable_path_encoding)
+
         case args.size
         when 1
           path = args[0]
@@ -31,7 +33,7 @@ module Imgix
           raise RuntimeError.new('path missing')
         end
 
-        imgix_client(source).path(path).to_url(params).html_safe
+        imgix_client(source).path(path).to_url(params, disable_path_encoding: disable_path_encoding).html_safe
       end
 
       protected
