@@ -11,10 +11,6 @@ describe Imgix::Rails::UrlHelper do
     end.new
   end
 
-  before do
-    Imgix::Rails.configure { |config| config.imgix = {} }
-  end
-
   describe 'configuration' do
     let(:app) { Class.new(::Rails::Application) }
     let(:source) { "assets.imgix.net" }
