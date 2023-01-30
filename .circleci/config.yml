@@ -1,12 +1,12 @@
 version: 2.1 # Use 2.1 to enable using orbs and other features.
- 
+
 orbs:
   ruby: circleci/ruby@1.2.0
   node: circleci/node@2
 
 commands:
   rspec:
-    parameters: 
+    parameters:
       out-path:
         default: /tmp/test-results/rspec
         description: >-
@@ -17,8 +17,8 @@ commands:
       - run:
           command: >
             mkdir -p <<parameters.out-path>>
-            
-            bundle exec rspec --format RspecJunitFormatter --out <<parameters.out-path>>/results.xml --format progress 
+
+            bundle exec rspec --format RspecJunitFormatter --out <<parameters.out-path>>/results.xml --format progress
           name: "Run tests with RSpec"
       - store_test_results:
           path: <<parameters.out-path>>
@@ -37,7 +37,7 @@ commands:
           lives in the root.
         type: string
       bundler-version:
-        default: ''
+        default: ""
         description: >
           Configure which version of bundler to install and utilize. By default, it
           gets the bundler version from Gemfile.lock, but if it is not working use
@@ -58,7 +58,7 @@ commands:
         description: Enable automatic caching of your gemfile dependencies for increased speed.
         type: boolean
       platform:
-        default: 'x86_64-linux'
+        default: "x86_64-linux"
         type: string
     steps:
       - when:
@@ -75,9 +75,14 @@ commands:
                   - << parameters.key >>
       - run:
           command: |
-            gem install bundler
 
-            # here is only part that is changed from the orb command,
+            # we use an pinned bundler version for jruby
+            if [ "<< parameters.key >>" == "circleci/jruby:9.2.11.0-node" ]; then
+              gem install bundler -v 2.3.26
+            else
+              gem install bundler
+            fi
+
             # where we add the platform command to allow CircleCI to bundle
             bundle lock --add-platform <<parameters.platform>> 
             if [ "<< parameters.path >>" == "./vendor/bundle" ]; then
@@ -98,11 +103,11 @@ commands:
                   "<<parameters.app-dir>>/Gemfile"  }}-{{ .Branch }}
                 paths:
                   - <<parameters.app-dir>>/<< parameters.path >>
- 
+
 jobs:
   test:
     parameters:
-      version: 
+      version:
         default: "cimg/ruby:3.0-node"
         description: Ruby image to use
         type: string
@@ -114,10 +119,9 @@ jobs:
           key: <<parameters.version>>
       - rspec
 
- 
 workflows:
   version: 2
-  test:     
+  test:
     jobs:
       - test:
           matrix:
