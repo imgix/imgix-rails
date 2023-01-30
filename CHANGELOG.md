@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.3.1](https://github.com/imgix/imgix-rb/compare/4.3.0...4.3.1) - January 30, 2023
+
+- Allow disabling path encoding in ix_image_url  ([#125] (https://github.com/imgix/imgix-rails/pull/125))
+
 ## [4.3.0](https://github.com/imgix/imgix-rb/compare/4.2.0...4.3.0) - December 14, 2022
 
 - Add img_tag_options to ix_picture_tag ([#118] (https://github.com/imgix/imgix-rails/pull/118))
