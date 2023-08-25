@@ -610,6 +610,39 @@ describe Imgix::Rails do
             expect(tag.children[1].attribute('src').value).not_to include('widths')
           end
         end
+
+        context 'breakpoint overrides' do
+          let(:tag) do
+            picture_tag = helper.ix_picture_tag(
+              'bertandernie.jpg',
+              srcset_options: {
+                widths: [100,200]
+              },
+              breakpoints: {
+                "800px": {
+                  srcset_options: {
+                    widths: [600,700]
+                  }
+                }
+              }
+            )
+            Nokogiri::HTML.fragment(picture_tag).children[0]
+          end
+
+          it 'uses base settings on img tag' do
+            expect(tag.children[1].attribute('srcset').value).to include('100w')
+            expect(tag.children[1].attribute('srcset').value).to include('200w')
+            expect(tag.children[1].attribute('srcset').value).not_to include('600w')
+            expect(tag.children[1].attribute('srcset').value).not_to include('700w')
+          end
+
+          it 'uses breakpoint override on source tag' do
+            expect(tag.children[0].attribute('srcset').value).not_to include('100w')
+            expect(tag.children[0].attribute('srcset').value).not_to include('200w')
+            expect(tag.children[0].attribute('srcset').value).to include('600w')
+            expect(tag.children[0].attribute('srcset').value).to include('700w')
+          end
+        end
       end
 
       context 'with img_tag_options' do
