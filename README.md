@@ -126,12 +126,12 @@ Will render out HTML like the following:
   alt="A hot air balloon on a sunny day"
   sizes="100vw"
   srcset="
-    https://assets.imgix.net/unsplash/hotairballoon.jpg?w=100&amp;h=167&amp;fit=crop&amp;crop=right 100w,
-    https://assets.imgix.net/unsplash/hotairballoon.jpg?w=200&amp;h=333&amp;fit=crop&amp;crop=right 200w,
+    https://assets.imgix.net/unsplash/hotairballoon.jpg?w=100&h=167&fit=crop&crop=right 100w,
+    https://assets.imgix.net/unsplash/hotairballoon.jpg?w=200&h=333&fit=crop&crop=right 200w,
     …
-    https://assets.imgix.net/unsplash/hotairballoon.jpg?w=2560&amp;h=4267&amp;fit=crop&amp;crop=right 2560w
+    https://assets.imgix.net/unsplash/hotairballoon.jpg?w=2560&h=4267&fit=crop&crop=right 2560w
   "
-  src="https://assets.imgix.net/unsplash/hotairballoon.jpg?w=300&amp;h=500&amp;fit=crop&amp;crop=right"
+  src="https://assets.imgix.net/unsplash/hotairballoon.jpg?w=300&h=500&fit=crop&crop=right"
 >
 ```
 
@@ -174,11 +174,11 @@ In cases where enough information is provided about an image's dimensions, `ix_i
 Will render the following HTML:
 
 ```html
-<img srcset="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=1&amp;q=75 1x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=2&amp;q=50 2x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=3&amp;q=35 3x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=4&amp;q=23 4x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=20 5x" sizes="100vw" src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000">
+<img srcset="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=1&q=75 1x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=2&q=50 2x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=3&q=35 3x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=4&q=23 4x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=5&q=20 5x" sizes="100vw" src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000">
 ```
 
 Fixed image rendering will automatically append a variable `q` parameter mapped to each `dpr` parameter when generating a `srcset`. This technique is commonly used to compensate for the increased filesize of high-DPR images. Since high-DPR images are displayed at a higher pixel density on devices, image quality can be lowered to reduce overall filesize without sacrificing perceived visual quality. For more information and examples of this technique in action, see [this blog post](https://blog.imgix.com/2016/03/30/dpr-quality?_ga=utm_medium=referral&utm_source=sdk&utm_campaign=rails-readme). This behavior will respect any overriding `q` value passed in via `url_params` and can be disabled altogether with `srcset_options: { disable_variable_quality: true }`.
@@ -196,13 +196,13 @@ tag_options: {src: "lqip.jpg"}) %>
 Will render the following HTML:
 
 ```html
-<img data-srcset="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=1&amp;q=75 1x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=2&amp;q=50 2x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=3&amp;q=35 3x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=4&amp;q=23 4x,
-https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000&amp;dpr=5&amp;q=20 5x"
+<img data-srcset="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=1&q=75 1x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=2&q=50 2x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=3&q=35 3x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=4&q=23 4x,
+https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000&dpr=5&q=20 5x"
 data-sizes="100vw"
-data-src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&amp;w=1000"
+data-src="https://assets.imgix.net/image.jpg?ixlib=rails-3.0.2&w=1000"
 src="lqip.jpg">
 ```
 
